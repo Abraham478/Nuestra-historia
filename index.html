@@ -41,7 +41,7 @@
       padding-bottom: env(safe-area-inset-bottom);
     }
 
-    /* ================= 1. INTRO OFICIAL NETFLIX (SIN HUECO NEGRO Y ESPECTRO DETRÁS) ================= */
+    /* ================= 1. INTRO OFICIAL NETFLIX ================= */
     .intro-screen {
       position: fixed;
       inset: 0;
@@ -1158,12 +1158,13 @@
       box-shadow: 0 8px 20px rgba(0, 0, 0, 0.85);
     }
 
-    .top10-poster img {
+    .top10-poster video {
       width: 100%;
       height: 100%;
       object-fit: cover;
       display: block;
-      opacity: 0.72;
+      opacity: 0.85;
+      pointer-events: none;
     }
 
     .top10-play-badge {
@@ -1354,7 +1355,7 @@
       color: var(--netflix-gray);
     }
 
-    /* ================= REPRODUCTOR FULLSCREEN HORIZONTAL ================= */
+    /* ================= REPRODUCTOR FULLSCREEN ================= */
     .player-overlay {
       position: fixed;
       inset: 0;
@@ -1782,15 +1783,15 @@
     </div>
   </section>
 
-  <!-- ================= TOP 5 MOMENTOS HOY (CARGA BAJO DEMANDA SIN SATURAR INTERNET) ================= -->
+  <!-- ================= TOP 5 MOMENTOS HOY ================= -->
   <section class="category-section reveal-section" id="top10">
     <h2 class="section-title">Top 5 Momentos de Nosotros Hoy (Hay muchos más pero no me decido chula :3)</h2>
     <div class="top10-row">
       
-      <div class="top10-item" onclick="openTopVideo('mi.netflix/1.mp4')">
+      <div class="top10-item" onclick="openTopVideo('mi.netflix/1.mp4', false)">
         <div class="top10-number">1</div>
         <div class="top10-poster">
-          <img src="mi.netflix/P1.jpg" alt="Momento 1" loading="lazy">
+          <video src="mi.netflix/1.mp4#t=0.5" muted playsinline preload="metadata"></video>
           <div class="top10-play-badge">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
           </div>
@@ -1798,10 +1799,10 @@
         </div>
       </div>
 
-      <div class="top10-item" onclick="openTopVideo('mi.netflix/2.mp4')">
+      <div class="top10-item" onclick="openTopVideo('mi.netflix/2.mp4', false)">
         <div class="top10-number">2</div>
         <div class="top10-poster">
-          <img src="mi.netflix/V1.jpeg" alt="Momento 2" loading="lazy">
+          <video src="mi.netflix/2.mp4#t=0.5" muted playsinline preload="metadata"></video>
           <div class="top10-play-badge">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
           </div>
@@ -1809,10 +1810,10 @@
         </div>
       </div>
 
-      <div class="top10-item" onclick="openTopVideo('mi.netflix/3.mp4')">
+      <div class="top10-item" onclick="openTopVideo('mi.netflix/3.mp4', false)">
         <div class="top10-number">3</div>
         <div class="top10-poster">
-          <img src="mi.netflix/GD1.jpg" alt="Momento 3" loading="lazy">
+          <video src="mi.netflix/3.mp4#t=0.5" muted playsinline preload="metadata"></video>
           <div class="top10-play-badge">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
           </div>
@@ -1820,10 +1821,10 @@
         </div>
       </div>
 
-      <div class="top10-item" onclick="openTopVideo('mi.netflix/4.mp4')">
+      <div class="top10-item" onclick="openTopVideo('mi.netflix/4.mp4', true)">
         <div class="top10-number">4</div>
         <div class="top10-poster">
-          <img src="mi.netflix/C1.jpg" alt="Momento 4" loading="lazy">
+          <video src="mi.netflix/4.mp4#t=0.5" muted playsinline preload="metadata"></video>
           <div class="top10-play-badge">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
           </div>
@@ -1831,10 +1832,10 @@
         </div>
       </div>
 
-      <div class="top10-item" onclick="openTopVideo('mi.netflix/5.mp4')">
+      <div class="top10-item" onclick="openTopVideo('mi.netflix/5.mp4', false)">
         <div class="top10-number">5</div>
         <div class="top10-poster">
-          <img src="mi.netflix/D1.jpg" alt="Momento 5" loading="lazy">
+          <video src="mi.netflix/5.mp4#t=0.5" muted playsinline preload="metadata"></video>
           <div class="top10-play-badge">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
           </div>
@@ -2024,7 +2025,7 @@
     </div>
   </div>
 
-  <!-- ================= REPRODUCTOR FULLSCREEN HORIZONTAL ================= -->
+  <!-- ================= REPRODUCTOR FULLSCREEN ================= -->
   <div class="player-overlay" id="videoPlayerOverlay">
     <button class="player-back-btn" onclick="closePlayer()">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
@@ -2646,8 +2647,8 @@
       if (event.target.id === 'infoModal') closeModal();
     }
 
-    /* ================= REPRODUCTOR FULLSCREEN HORIZONTAL AUTOMÁTICO ================= */
-    async function enterLandscapeFullscreen(containerEl, videoEl) {
+    /* ================= REPRODUCTOR FULLSCREEN (HORIZONTAL SOLO SI SE INDICA) ================= */
+    async function enterFullscreenMode(containerEl, videoEl, forceLandscape = false) {
       try {
         if (containerEl.requestFullscreen) {
           await containerEl.requestFullscreen();
@@ -2658,11 +2659,13 @@
         }
       } catch (e) {}
 
-      try {
-        if (screen.orientation && screen.orientation.lock) {
-          await screen.orientation.lock('landscape');
-        }
-      } catch (e) {}
+      if (forceLandscape) {
+        try {
+          if (screen.orientation && screen.orientation.lock) {
+            await screen.orientation.lock('landscape');
+          }
+        } catch (e) {}
+      }
     }
 
     function exitLandscapeFullscreen() {
@@ -2683,7 +2686,7 @@
       } catch (e) {}
     }
 
-    function playVideoInFullscreen(videoSrc) {
+    function playVideoInFullscreen(videoSrc, forceLandscape = false) {
       const overlay = document.getElementById('videoPlayerOverlay');
       const fullVideo = document.getElementById('fullPlayerVideo');
       const bgVideo = document.getElementById('bgVideo');
@@ -2693,16 +2696,16 @@
       overlay.classList.add('open');
       fullVideo.currentTime = 0;
 
-      enterLandscapeFullscreen(overlay, fullVideo);
+      enterFullscreenMode(overlay, fullVideo, forceLandscape);
       fullVideo.play().catch(() => {});
     }
 
     function openPlayer() {
-      playVideoInFullscreen("mi.netflix/intro.mp4");
+      playVideoInFullscreen("mi.netflix/intro.mp4", true);
     }
 
-    function openTopVideo(videoSrc) {
-      playVideoInFullscreen(videoSrc);
+    function openTopVideo(videoSrc, forceLandscape = false) {
+      playVideoInFullscreen(videoSrc, forceLandscape);
     }
 
     function closePlayer() {
