@@ -86,7 +86,6 @@
       animation: netflixCameraZoom 3.9s cubic-bezier(0.7, 0, 0.22, 1) forwards;
     }
 
-    /* Espectro de líneas de luz DETRÁS de la letra N */
     .netflix-spectrum {
       position: absolute;
       top: -45%;
@@ -616,6 +615,7 @@
       height: 100%;
       object-fit: cover;
       object-position: center;
+      will-change: transform;
     }
 
     .hero-vignette-left {
@@ -1163,7 +1163,7 @@
       height: 100%;
       object-fit: cover;
       display: block;
-      opacity: 0.85;
+      opacity: 0.88;
       pointer-events: none;
     }
 
@@ -1378,6 +1378,19 @@
       height: 100%;
       object-fit: contain;
       background: #000;
+    }
+
+    .player-spinner {
+      position: absolute;
+      width: 46px;
+      height: 46px;
+      border: 3px solid rgba(255, 255, 255, 0.25);
+      border-top-color: var(--netflix-red);
+      border-radius: 50%;
+      animation: spinLoader 0.75s linear infinite;
+      z-index: 205;
+      display: none;
+      pointer-events: none;
     }
 
     .player-back-btn {
@@ -1786,12 +1799,12 @@
   <!-- ================= TOP 5 MOMENTOS HOY ================= -->
   <section class="category-section reveal-section" id="top10">
     <h2 class="section-title">Top 5 Momentos de Nosotros Hoy (Hay muchos más pero no me decido chula :3)</h2>
-    <div class="top10-row">
+    <div class="top10-row" id="top10Row">
       
       <div class="top10-item" onclick="openTopVideo('mi.netflix/1.mp4', false)">
         <div class="top10-number">1</div>
         <div class="top10-poster">
-          <video src="mi.netflix/1.mp4#t=0.5" muted playsinline preload="metadata"></video>
+          <video class="lazy-thumb-video" data-src="mi.netflix/1.mp4#t=0.5" muted playsinline preload="none"></video>
           <div class="top10-play-badge">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
           </div>
@@ -1802,7 +1815,7 @@
       <div class="top10-item" onclick="openTopVideo('mi.netflix/2.mp4', false)">
         <div class="top10-number">2</div>
         <div class="top10-poster">
-          <video src="mi.netflix/2.mp4#t=0.5" muted playsinline preload="metadata"></video>
+          <video class="lazy-thumb-video" data-src="mi.netflix/2.mp4#t=0.5" muted playsinline preload="none"></video>
           <div class="top10-play-badge">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
           </div>
@@ -1813,7 +1826,7 @@
       <div class="top10-item" onclick="openTopVideo('mi.netflix/3.mp4', false)">
         <div class="top10-number">3</div>
         <div class="top10-poster">
-          <video src="mi.netflix/3.mp4#t=0.5" muted playsinline preload="metadata"></video>
+          <video class="lazy-thumb-video" data-src="mi.netflix/3.mp4#t=0.5" muted playsinline preload="none"></video>
           <div class="top10-play-badge">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
           </div>
@@ -1824,7 +1837,7 @@
       <div class="top10-item" onclick="openTopVideo('mi.netflix/4.mp4', true)">
         <div class="top10-number">4</div>
         <div class="top10-poster">
-          <video src="mi.netflix/4.mp4#t=0.5" muted playsinline preload="metadata"></video>
+          <video class="lazy-thumb-video" data-src="mi.netflix/4.mp4#t=0.5" muted playsinline preload="none"></video>
           <div class="top10-play-badge">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
           </div>
@@ -1835,7 +1848,7 @@
       <div class="top10-item" onclick="openTopVideo('mi.netflix/5.mp4', false)">
         <div class="top10-number">5</div>
         <div class="top10-poster">
-          <video src="mi.netflix/5.mp4#t=0.5" muted playsinline preload="metadata"></video>
+          <video class="lazy-thumb-video" data-src="mi.netflix/5.mp4#t=0.5" muted playsinline preload="none"></video>
           <div class="top10-play-badge">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
           </div>
@@ -2031,7 +2044,8 @@
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
       Volver
     </button>
-    <video id="fullPlayerVideo" controls playsinline preload="metadata"></video>
+    <div class="player-spinner" id="playerSpinner"></div>
+    <video id="fullPlayerVideo" controls playsinline preload="auto"></video>
   </div>
 
   <!-- ================= VISOR DE FOTOS CON PRECARGA Y SPINNER ================= -->
@@ -2296,7 +2310,14 @@
     let introStarted = false;
     let introAudioPlayed = false;
     let introHideTimer = null;
+    let top5ThumbnailsLoaded = false;
     const preloadedImages = new Set();
+
+    function isLowBandwidthConnection() {
+      const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+      if (!conn) return false;
+      return Boolean(conn.saveData || conn.effectiveType === '2g' || conn.effectiveType === 'slow-2g');
+    }
 
     function buildNetflixSpectrum() {
       const container = document.getElementById('netflixSpectrum');
@@ -2464,6 +2485,33 @@
       } catch (e) {}
     }
 
+    /* ================= CARGA SECUENCIAL DE MINIATURAS DE VIDEO TOP 5 ================= */
+    function loadTop5ThumbnailsSequentially() {
+      if (top5ThumbnailsLoaded) return;
+      top5ThumbnailsLoaded = true;
+
+      const thumbVideos = Array.from(document.querySelectorAll('.lazy-thumb-video'));
+      let idx = 0;
+
+      function loadNextThumb() {
+        if (idx >= thumbVideos.length) return;
+        const vid = thumbVideos[idx];
+        idx++;
+        const src = vid.getAttribute('data-src');
+        if (!src) {
+          loadNextThumb();
+          return;
+        }
+        vid.preload = 'metadata';
+        vid.src = src;
+        vid.onloadeddata = () => setTimeout(loadNextThumb, 120);
+        vid.onerror = () => setTimeout(loadNextThumb, 120);
+        setTimeout(loadNextThumb, 650);
+      }
+
+      loadNextThumb();
+    }
+
     window.addEventListener('DOMContentLoaded', () => {
       buildNetflixSpectrum();
 
@@ -2490,6 +2538,9 @@
         entries.forEach(entry => {
           if (entry.isIntersecting) {
             entry.target.classList.add('visible');
+            if (entry.target.id === 'top10') {
+              loadTop5ThumbnailsSequentially();
+            }
           }
         });
       }, { threshold: 0.06 });
@@ -2498,7 +2549,8 @@
 
       setTimeout(() => {
         sections.forEach(sec => sec.classList.add('visible'));
-      }, 1500);
+        loadTop5ThumbnailsSequentially();
+      }, 2200);
     }
 
     function nextReason() {
@@ -2551,9 +2603,14 @@
       document.getElementById('activeAvatar').src = avatarUrl;
       document.getElementById('profilesScreen').classList.add('hidden');
       document.body.style.overflow = '';
+
       const bgVideo = document.getElementById('bgVideo');
-      bgVideo.currentTime = 0;
-      bgVideo.play().catch(() => {});
+      if (!isLowBandwidthConnection()) {
+        bgVideo.preload = 'metadata';
+        bgVideo.currentTime = 0;
+        bgVideo.play().catch(() => {});
+      }
+      setTimeout(loadTop5ThumbnailsSequentially, 900);
     }
 
     function openSpecialMyProfile(avatarUrl) {
@@ -2626,9 +2683,22 @@
       navbar.classList.toggle('scrolled', window.scrollY > 40);
     }, { passive: true });
 
+    document.addEventListener('visibilitychange', () => {
+      const bgVideo = document.getElementById('bgVideo');
+      const overlay = document.getElementById('videoPlayerOverlay');
+      if (document.hidden) {
+        bgVideo.pause();
+      } else if (!overlay.classList.contains('open') && !isLowBandwidthConnection()) {
+        bgVideo.play().catch(() => {});
+      }
+    });
+
     function toggleMute() {
       const video = document.getElementById('bgVideo');
       video.muted = !video.muted;
+      if (!video.muted && video.paused) {
+        video.play().catch(() => {});
+      }
       document.getElementById('iconMuted').style.display = video.muted ? 'block' : 'none';
       document.getElementById('iconUnmuted').style.display = video.muted ? 'none' : 'block';
     }
@@ -2647,7 +2717,7 @@
       if (event.target.id === 'infoModal') closeModal();
     }
 
-    /* ================= REPRODUCTOR FULLSCREEN (HORIZONTAL SOLO SI SE INDICA) ================= */
+    /* ================= REPRODUCTOR FULLSCREEN OPTIMIZADO ================= */
     async function enterFullscreenMode(containerEl, videoEl, forceLandscape = false) {
       try {
         if (containerEl.requestFullscreen) {
@@ -2690,14 +2760,23 @@
       const overlay = document.getElementById('videoPlayerOverlay');
       const fullVideo = document.getElementById('fullPlayerVideo');
       const bgVideo = document.getElementById('bgVideo');
+      const spinner = document.getElementById('playerSpinner');
 
       bgVideo.pause();
+      spinner.style.display = 'block';
+
+      fullVideo.onwaiting = () => { spinner.style.display = 'block'; };
+      fullVideo.onplaying = () => { spinner.style.display = 'none'; };
+      fullVideo.oncanplay = () => { spinner.style.display = 'none'; };
+
       fullVideo.src = videoSrc;
       overlay.classList.add('open');
       fullVideo.currentTime = 0;
 
       enterFullscreenMode(overlay, fullVideo, forceLandscape);
-      fullVideo.play().catch(() => {});
+      fullVideo.play().catch(() => {
+        spinner.style.display = 'none';
+      });
     }
 
     function openPlayer() {
@@ -2712,13 +2791,17 @@
       const overlay = document.getElementById('videoPlayerOverlay');
       const fullVideo = document.getElementById('fullPlayerVideo');
       const bgVideo = document.getElementById('bgVideo');
+      const spinner = document.getElementById('playerSpinner');
 
+      spinner.style.display = 'none';
       fullVideo.pause();
       fullVideo.removeAttribute('src');
       fullVideo.load();
       overlay.classList.remove('open');
       exitLandscapeFullscreen();
-      bgVideo.play().catch(() => {});
+      if (!isLowBandwidthConnection()) {
+        bgVideo.play().catch(() => {});
+      }
     }
 
     document.addEventListener('fullscreenchange', () => {
