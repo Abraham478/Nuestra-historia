@@ -1,0 +1,2681 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Netflix — Season 1: Nosotros</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --netflix-red: #E50914;
+      --netflix-red-dark: #B1060F;
+      --netflix-black: #141414;
+      --netflix-surface: #181818;
+      --netflix-surface-hover: #222222;
+      --netflix-gray: #808080;
+      --border-subtle: rgba(255, 255, 255, 0.12);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background-color: var(--netflix-black);
+      color: #ffffff;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ================= 1. INTRO OFICIAL NETFLIX ================= */
+    .intro-screen {
+      position: fixed;
+      inset: 0;
+      background-color: #000000;
+      z-index: 99999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      cursor: pointer;
+      perspective: 900px;
+      transition: opacity 0.85s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.85s ease;
+    }
+
+    .intro-screen.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .intro-screen.waiting-gesture .netflix-intro-stage,
+    .intro-screen.waiting-gesture .n-pillar-left,
+    .intro-screen.waiting-gesture .n-diagonal-ribbon,
+    .intro-screen.waiting-gesture .n-pillar-right,
+    .intro-screen.waiting-gesture .netflix-spectrum,
+    .intro-screen.waiting-gesture .spec-ray,
+    .intro-screen.waiting-gesture .n-glow-core {
+      animation-play-state: paused !important;
+    }
+
+    .netflix-intro-stage {
+      position: relative;
+      width: 156px;
+      height: 270px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transform-style: preserve-3d;
+      animation: netflixCameraZoom 3.9s cubic-bezier(0.7, 0, 0.22, 1) forwards;
+    }
+
+    .netflix-intro-stage::after {
+      content: "";
+      position: absolute;
+      bottom: -14px;
+      left: -8%;
+      width: 116%;
+      height: 24px;
+      background: #000000;
+      border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+      z-index: 6;
+    }
+
+    .n-pillar {
+      width: 44px;
+      height: 100%;
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(90deg, #8b0007 0%, #b80710 45%, #99040b 100%);
+    }
+
+    .n-pillar-left {
+      transform: scaleY(0);
+      transform-origin: bottom center;
+      box-shadow: 6px 0 18px rgba(0, 0, 0, 0.75);
+      animation: drawPillarUp 0.42s cubic-bezier(0.16, 1, 0.3, 1) 0.12s forwards;
+    }
+
+    .n-diagonal-ribbon {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 44px;
+      height: 100%;
+      background: linear-gradient(180deg, #e50914 0%, #ff1e27 48%, #d40711 100%);
+      transform-origin: top left;
+      transform: skewX(22.5deg) scaleY(0);
+      box-shadow:
+        -14px 0 26px rgba(0, 0, 0, 0.92),
+        14px 0 26px rgba(0, 0, 0, 0.92),
+        inset 0 0 12px rgba(255, 90, 90, 0.35);
+      z-index: 4;
+      animation: drawRibbonDown 0.46s cubic-bezier(0.16, 1, 0.3, 1) 0.48s forwards;
+    }
+
+    .n-pillar-right {
+      transform: scaleY(0);
+      transform-origin: bottom center;
+      box-shadow: -6px 0 18px rgba(0, 0, 0, 0.75);
+      animation: drawPillarUp 0.42s cubic-bezier(0.16, 1, 0.3, 1) 0.86s forwards;
+    }
+
+    .n-glow-core {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 52% 50%, rgba(255, 255, 255, 0.95) 0%, rgba(229, 9, 20, 0.75) 35%, transparent 72%);
+      opacity: 0;
+      z-index: 5;
+      mix-blend-mode: screen;
+      animation: coreFlash 1.6s ease-out 1.48s forwards;
+    }
+
+    .netflix-spectrum {
+      position: absolute;
+      top: -35%;
+      bottom: -35%;
+      left: -60%;
+      right: -60%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 2px;
+      opacity: 0;
+      z-index: 5;
+      pointer-events: none;
+      animation: spectrumRibbonBurst 2.15s cubic-bezier(0.12, 0.85, 0.25, 1) 1.5s forwards;
+    }
+
+    .spec-ray {
+      flex: 1;
+      height: 150%;
+      background: linear-gradient(
+        to bottom,
+        transparent 0%,
+        var(--c) 28%,
+        #ffffff 50%,
+        var(--c) 72%,
+        transparent 100%
+      );
+      opacity: var(--o, 0.9);
+      filter: blur(0.4px);
+      transform: scaleY(0.1);
+      animation: rayStretch 2.0s cubic-bezier(0.16, 1, 0.3, 1) 1.5s forwards;
+    }
+
+    @keyframes drawPillarUp {
+      0% { transform: scaleY(0); }
+      100% { transform: scaleY(1); }
+    }
+
+    @keyframes drawRibbonDown {
+      0% { transform: skewX(22.5deg) scaleY(0); }
+      100% { transform: skewX(22.5deg) scaleY(1); }
+    }
+
+    @keyframes coreFlash {
+      0% { opacity: 0; transform: scale(0.6); }
+      22% { opacity: 0.95; transform: scale(1.05); }
+      100% { opacity: 0; transform: scale(1.6); }
+    }
+
+    @keyframes netflixCameraZoom {
+      0% { transform: scale(0.86) translateZ(0); opacity: 1; }
+      38% { transform: scale(1.0) translateZ(0); opacity: 1; }
+      62% { transform: scale(2.4) translateX(-4px); opacity: 1; }
+      86% { transform: scale(14) translateX(-10px); opacity: 0.92; }
+      100% { transform: scale(34) translateX(-14px); opacity: 0; }
+    }
+
+    @keyframes spectrumRibbonBurst {
+      0% { opacity: 0; transform: scaleX(0.12); }
+      18% { opacity: 1; }
+      75% { opacity: 0.95; }
+      100% { opacity: 0; transform: scaleX(4.2); }
+    }
+
+    @keyframes rayStretch {
+      0% { transform: scaleY(0.1); }
+      100% { transform: scaleY(2.1); }
+    }
+
+    .sound-unlock-banner {
+      position: absolute;
+      bottom: 46px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 20px;
+      border-radius: 999px;
+      background: rgba(20, 20, 20, 0.82);
+      border: 1px solid rgba(229, 9, 20, 0.65);
+      color: #ffffff;
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 1.8px;
+      text-transform: uppercase;
+      box-shadow: 0 0 24px rgba(229, 9, 20, 0.35);
+      z-index: 10;
+      transition: opacity 0.35s ease, transform 0.35s ease;
+      animation: pulseHint 1.8s infinite;
+    }
+
+    .sound-unlock-banner.hidden-hint {
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(8px);
+    }
+
+    @keyframes pulseHint {
+      0%, 100% { opacity: 0.65; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.03); }
+    }
+
+    /* ================= 2. PANTALLA "¿QUIÉN ESTÁ VIENDO?" ================= */
+    .profiles-screen {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at center, #1c1c1c 0%, #0b0b0b 100%);
+      z-index: 9000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      transition: opacity 0.6s ease, visibility 0.6s ease;
+    }
+
+    .profiles-screen.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .profiles-logo-top {
+      position: absolute;
+      top: 24px;
+      left: 4%;
+      font-family: 'Bebas Neue', sans-serif;
+      color: var(--netflix-red);
+      font-size: 2rem;
+      letter-spacing: 1.5px;
+    }
+
+    .profiles-title {
+      font-size: clamp(1.6rem, 4vw, 2.8rem);
+      font-weight: 400;
+      letter-spacing: -0.5px;
+      margin-bottom: 40px;
+      text-align: center;
+      color: #ffffff;
+    }
+
+    .profiles-grid {
+      display: flex;
+      gap: clamp(20px, 4.5vw, 42px);
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .profile-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+      transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .profile-card:hover {
+      transform: translateY(-6px);
+    }
+
+    .profile-img-box {
+      position: relative;
+      width: clamp(98px, 22vw, 148px);
+      height: clamp(98px, 22vw, 148px);
+      border-radius: 6px;
+      overflow: hidden;
+      border: 2px solid transparent;
+      transition: border-color 0.25s ease, box-shadow 0.25s ease;
+      margin-bottom: 12px;
+      background-color: #1f1f1f;
+    }
+
+    .profile-card:hover .profile-img-box {
+      border-color: #ffffff;
+      box-shadow: 0 14px 32px rgba(0, 0, 0, 0.85);
+    }
+
+    .profile-img-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.4s ease;
+    }
+
+    .profile-card:hover .profile-img-box img {
+      transform: scale(1.04);
+    }
+
+    .lock-badge {
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
+      background: rgba(15, 15, 15, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      width: 28px;
+      height: 28px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+    }
+
+    .profile-name {
+      color: var(--netflix-gray);
+      font-size: clamp(0.95rem, 2vw, 1.15rem);
+      font-weight: 500;
+      transition: color 0.25s ease;
+    }
+
+    .profile-card:hover .profile-name {
+      color: #ffffff;
+    }
+
+    /* ================= AVISO ESPECIAL AL ELEGIR TU PERFIL ================= */
+    .special-profile-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.92);
+      z-index: 9500;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      text-align: center;
+      backdrop-filter: blur(12px);
+    }
+
+    .special-profile-overlay.open {
+      display: flex;
+      animation: fadeIn 0.35s ease;
+    }
+
+    .special-card-box {
+      background: linear-gradient(160deg, #1d1d1d 0%, #121212 100%);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-top: 2px solid var(--netflix-red);
+      border-radius: 10px;
+      padding: 40px 30px;
+      max-width: 460px;
+      width: 100%;
+      box-shadow: 0 28px 70px rgba(0, 0, 0, 0.95);
+      animation: popUp 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    @keyframes popUp {
+      from { transform: scale(0.92); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .special-avatar-ring {
+      width: 96px;
+      height: 96px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid rgba(255, 255, 255, 0.8);
+      margin-bottom: 20px;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.7);
+    }
+
+    .special-eyebrow {
+      font-size: 0.72rem;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: var(--netflix-red);
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .special-message-title {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: clamp(1.5rem, 4vw, 1.95rem);
+      font-weight: 500;
+      color: #ffffff;
+      margin-bottom: 14px;
+      line-height: 1.3;
+    }
+
+    .special-message-sub {
+      color: #b3b3b3;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      margin-bottom: 28px;
+    }
+
+    .special-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    /* ================= PIN MODAL PARA CARTA SECRETA ================= */
+    .pin-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 10, 10, 0.96);
+      z-index: 9600;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      text-align: center;
+    }
+
+    .pin-overlay.open {
+      display: flex;
+    }
+
+    .pin-input {
+      background: #1a1a1a;
+      border: 1px solid #444;
+      color: #fff;
+      font-size: 1.8rem;
+      letter-spacing: 10px;
+      text-align: center;
+      padding: 12px 20px;
+      border-radius: 4px;
+      width: 240px;
+      margin: 20px 0;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .pin-input:focus {
+      border-color: var(--netflix-red);
+    }
+
+    /* ================= BARRA DE NAVEGACIÓN SUPERIOR ================= */
+    .navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 4%;
+      background: linear-gradient(to bottom, rgba(0, 0, 0, 0.88) 10%, rgba(0, 0, 0, 0));
+      transition: background-color 0.35s ease;
+    }
+
+    .navbar.scrolled {
+      background-color: rgba(20, 20, 20, 0.96);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+    }
+
+    .netflix-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      color: var(--netflix-red);
+      font-size: 2.1rem;
+      letter-spacing: 1.5px;
+      text-decoration: none;
+      font-weight: 700;
+      user-select: none;
+    }
+
+    .nav-links {
+      display: flex;
+      list-style: none;
+      gap: 20px;
+      font-size: 0.86rem;
+    }
+
+    .nav-links a {
+      color: #d2d2d2;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover,
+    .nav-links a.active {
+      color: #ffffff;
+      font-weight: 600;
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .switch-profile-btn {
+      background: rgba(20, 20, 20, 0.65);
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      color: #e5e5e5;
+      font-size: 0.78rem;
+      font-weight: 500;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .switch-profile-btn:hover {
+      border-color: #ffffff;
+      color: #ffffff;
+    }
+
+    .profile-avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 4px;
+      object-fit: cover;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      cursor: pointer;
+    }
+
+    /* ================= SECCIÓN PRINCIPAL (HERO VIDEO) ================= */
+    .hero {
+      position: relative;
+      width: 100%;
+      min-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 120px 4% 48px 4%;
+    }
+
+    .hero-video-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      overflow: hidden;
+    }
+
+    .hero-video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+    }
+
+    .hero-vignette-left {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(77deg, rgba(0, 0, 0, 0.92) 0%, rgba(0, 0, 0, 0.48) 48%, rgba(0, 0, 0, 0) 85%);
+      z-index: 2;
+    }
+
+    .hero-vignette-bottom {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 38%;
+      background: linear-gradient(to top, var(--netflix-black) 12%, rgba(20, 20, 20, 0.65) 60%, transparent 100%);
+      z-index: 2;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 10;
+      max-width: 650px;
+      margin-bottom: 28px;
+    }
+
+    .series-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 8px;
+      font-size: 0.82rem;
+      letter-spacing: 3.5px;
+      font-weight: 700;
+      color: #d2d2d2;
+    }
+
+    .series-badge span {
+      color: var(--netflix-red);
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.4rem;
+      letter-spacing: 0;
+    }
+
+    .hero-title {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: clamp(2.4rem, 5.5vw, 4.2rem);
+      font-weight: 600;
+      line-height: 1.1;
+      margin-bottom: 14px;
+      text-shadow: 2px 2px 14px rgba(0, 0, 0, 0.75);
+    }
+
+    .top1-ranking {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    .top10-box {
+      background-color: var(--netflix-red);
+      color: #ffffff;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 0.85rem;
+      line-height: 0.9;
+      padding: 4px 5px;
+      border-radius: 2px;
+      text-align: center;
+    }
+
+    .hero-meta {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+
+    .match-score {
+      color: #46d369;
+    }
+
+    .love-timer-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      padding: 6px 14px;
+      border-radius: 4px;
+      font-size: 0.84rem;
+      font-weight: 500;
+      color: #f3f3f3;
+      margin-bottom: 16px;
+      backdrop-filter: blur(6px);
+    }
+
+    .timer-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background-color: var(--netflix-red);
+      box-shadow: 0 0 8px var(--netflix-red);
+    }
+
+    .hero-description {
+      font-size: clamp(0.92rem, 1.35vw, 1.02rem);
+      line-height: 1.6;
+      color: #e5e5e5;
+      margin-bottom: 24px;
+      text-shadow: 1px 1px 6px rgba(0, 0, 0, 0.85);
+    }
+
+    .hero-buttons {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 11px 22px;
+      border-radius: 4px;
+      font-size: 0.96rem;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+    }
+
+    .btn:active {
+      transform: scale(0.97);
+    }
+
+    .btn-play {
+      background-color: #ffffff;
+      color: #000000;
+    }
+
+    .btn-play:hover {
+      background-color: rgba(255, 255, 255, 0.82);
+    }
+
+    .btn-info {
+      background-color: rgba(109, 109, 110, 0.65);
+      color: #ffffff;
+      backdrop-filter: blur(6px);
+    }
+
+    .btn-info:hover {
+      background-color: rgba(109, 109, 110, 0.45);
+    }
+
+    .btn-list {
+      background-color: rgba(24, 24, 24, 0.8);
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+    }
+
+    .btn-list.added {
+      border-color: #46d369;
+      color: #46d369;
+    }
+
+    .mute-toggle {
+      position: absolute;
+      right: 4%;
+      bottom: 240px;
+      z-index: 15;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.55);
+      background: rgba(15, 15, 15, 0.55);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      backdrop-filter: blur(4px);
+    }
+
+    /* ================= ANIMACIÓN AL HACER SCROLL ================= */
+    .reveal-section {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.7s ease-out, transform 0.7s ease-out;
+    }
+
+    .reveal-section.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ================= SECCIONES DE CARRUSELES ================= */
+    .category-section {
+      position: relative;
+      z-index: 10;
+      padding: 16px 4% 32px 4%;
+    }
+
+    .section-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      letter-spacing: -0.2px;
+      margin-bottom: 14px;
+      color: #e5e5e5;
+    }
+
+    .carousel-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    .fav-card {
+      position: relative;
+      border-radius: 4px;
+      overflow: hidden;
+      aspect-ratio: 16 / 10;
+      cursor: pointer;
+      background-color: #1f1f1f;
+      transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s ease;
+    }
+
+    .fav-card:hover {
+      transform: scale(1.05);
+      z-index: 20;
+      box-shadow: 0 14px 30px rgba(0, 0, 0, 0.9);
+    }
+
+    .fav-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .fav-card-caption {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(0, 0, 0, 0.92) 0%, transparent 65%);
+      display: flex;
+      align-items: flex-end;
+      padding: 12px;
+      opacity: 0;
+      transition: opacity 0.25s ease;
+      font-size: 0.84rem;
+      font-weight: 500;
+    }
+
+    .fav-card:hover .fav-card-caption {
+      opacity: 1;
+    }
+
+    /* ================= GENERADOR DE RAZONES EDITORIAL ================= */
+    .reasons-box {
+      background: linear-gradient(145deg, #1b1b1b 0%, #141414 100%);
+      border: 1px solid var(--border-subtle);
+      border-left: 3px solid var(--netflix-red);
+      border-radius: 6px;
+      padding: 32px 28px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+      box-shadow: 0 14px 35px rgba(0, 0, 0, 0.65);
+    }
+
+    .reason-counter-badge {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--netflix-red);
+    }
+
+    .reason-text-display {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: clamp(1.3rem, 2.8vw, 1.85rem);
+      font-style: italic;
+      color: #ffffff;
+      line-height: 1.4;
+      min-height: 60px;
+      transition: opacity 0.25s ease, transform 0.25s ease;
+    }
+
+    /* ================= CARTAS "ÁBREME CUANDO..." ================= */
+    .envelopes-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+
+    .envelope-card {
+      background: linear-gradient(145deg, #1c1618 0%, #161415 100%);
+      border: 1px solid rgba(255, 192, 203, 0.16);
+      border-radius: 8px;
+      padding: 24px 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .envelope-card:hover {
+      background: linear-gradient(145deg, #271a1e 0%, #1c1618 100%);
+      border-color: rgba(229, 9, 20, 0.75);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 28px rgba(229, 9, 20, 0.16);
+    }
+
+    .envelope-icon-box {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      background: rgba(229, 9, 20, 0.16);
+      border: 1px solid rgba(229, 9, 20, 0.4);
+      color: #ff4d5a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: transform 0.3s ease;
+    }
+
+    .envelope-card:hover .envelope-icon-box {
+      transform: scale(1.1);
+    }
+
+    .envelope-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .envelope-tag {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: #ff8fa3;
+      font-weight: 600;
+    }
+
+    .envelope-label {
+      font-weight: 600;
+      font-size: 0.96rem;
+      color: #f3f3f3;
+    }
+
+    /* ================= POPUP Y ESTILO ROMÁNTICO DE LAS CARTAS ================= */
+    .letter-popup {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at center, rgba(35, 8, 12, 0.88) 0%, rgba(0, 0, 0, 0.94) 100%);
+      z-index: 300;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      backdrop-filter: blur(8px);
+      overflow-y: auto;
+    }
+
+    .letter-popup.open {
+      display: flex;
+      animation: fadeIn 0.35s ease;
+    }
+
+    .letter-paper {
+      position: relative;
+      background: linear-gradient(165deg, #21181a 0%, #161213 55%, #1c1416 100%);
+      border: 1px solid rgba(255, 192, 203, 0.22);
+      border-top: 3px solid var(--netflix-red);
+      border-radius: 12px;
+      max-width: 580px;
+      width: 100%;
+      max-height: 85vh;
+      overflow-y: auto;
+      padding: 40px 34px 32px 34px;
+      box-shadow: 0 25px 70px rgba(0, 0, 0, 0.95), 0 0 35px rgba(229, 9, 20, 0.18);
+      transform-origin: center top;
+      animation: letterUnfold 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    .letter-paper::-webkit-scrollbar {
+      width: 5px;
+    }
+    .letter-paper::-webkit-scrollbar-thumb {
+      background: rgba(229, 9, 20, 0.5);
+      border-radius: 4px;
+    }
+
+    @keyframes letterUnfold {
+      0% {
+        opacity: 0;
+        transform: translateY(28px) scale(0.92) rotateX(-8deg);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0) scale(1) rotateX(0deg);
+      }
+    }
+
+    .letter-seal {
+      width: 44px;
+      height: 44px;
+      margin: 0 auto 14px auto;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #ff2a38, #9e060e);
+      box-shadow: 0 4px 15px rgba(229, 9, 20, 0.55);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      font-size: 1.1rem;
+      animation: heartbeatSeal 2s infinite ease-in-out;
+    }
+
+    @keyframes heartbeatSeal {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.08); }
+    }
+
+    .letter-paper > h3 {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 2.5px;
+      color: #ff7b89;
+      text-align: center;
+      margin-bottom: 18px;
+      font-weight: 600;
+    }
+
+    .letter-content h2 {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1.65rem;
+      font-style: italic;
+      font-weight: 600;
+      color: #fff0f3;
+      margin-bottom: 18px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255, 192, 203, 0.15);
+    }
+
+    .letter-content p {
+      font-size: 0.98rem;
+      line-height: 1.8;
+      color: #e6dce0;
+      margin-bottom: 16px;
+      text-align: left;
+    }
+
+    .letter-content .letter-ending {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-style: italic;
+      font-size: 1.12rem;
+      color: #ffb3c1;
+      margin-top: 20px;
+      margin-bottom: 22px;
+    }
+
+    .letter-signature {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      margin-top: 10px;
+      margin-bottom: 26px;
+      padding-top: 14px;
+      border-top: 1px dashed rgba(255, 255, 255, 0.14);
+    }
+
+    .letter-signature span {
+      font-size: 0.85rem;
+      color: #b8a6ac;
+      font-style: italic;
+    }
+
+    .letter-signature strong {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1.2rem;
+      color: #ffffff;
+      margin-top: 3px;
+    }
+
+    .letter-close-wrap {
+      display: flex;
+      justify-content: center;
+    }
+
+    /* ================= TOP 5 CON NÚMEROS GIGANTES ================= */
+    .top10-row {
+      display: flex;
+      overflow-x: auto;
+      gap: 18px;
+      padding-bottom: 10px;
+      scrollbar-width: none;
+    }
+
+    .top10-row::-webkit-scrollbar {
+      display: none;
+    }
+
+    .top10-item {
+      flex: 0 0 230px;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      position: relative;
+      transition: transform 0.25s ease;
+    }
+
+    .top10-item:hover {
+      transform: scale(1.04);
+    }
+
+    .top10-number {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 8.5rem;
+      line-height: 0.8;
+      color: #000000;
+      -webkit-text-stroke: 2.5px #595959;
+      user-select: none;
+      margin-right: -14px;
+      z-index: 1;
+    }
+
+    .top10-poster {
+      width: 145px;
+      height: 195px;
+      border-radius: 4px;
+      overflow: hidden;
+      position: relative;
+      z-index: 2;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.85);
+    }
+
+    .top10-poster video,
+    .top10-poster img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .top10-play-badge {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.65);
+      border: 1.5px solid rgba(255, 255, 255, 0.85);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.25s ease, background 0.25s ease;
+    }
+
+    .top10-item:hover .top10-play-badge {
+      transform: translate(-50%, -50%) scale(1.12);
+      background: var(--netflix-red);
+      border-color: var(--netflix-red);
+    }
+
+    .top10-label {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(to top, rgba(0, 0, 0, 0.92), transparent);
+      padding: 10px 8px 8px 8px;
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+
+    /* ================= PARTÍCULAS SUTILES DE DESTELLO ================= */
+    .sparkle-particle {
+      position: fixed;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--netflix-red);
+      box-shadow: 0 0 10px var(--netflix-red), 0 0 20px #ffffff;
+      z-index: 9999;
+      pointer-events: none;
+      animation: sparkleRise 2.2s ease-out forwards;
+    }
+
+    @keyframes sparkleRise {
+      0% { transform: translateY(0) scale(1); opacity: 1; }
+      100% { transform: translateY(-75vh) scale(0); opacity: 0; }
+    }
+
+    /* ================= MODAL "MORE INFO" ================= */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background-color: rgba(0, 0, 0, 0.82);
+      z-index: 100;
+      display: none;
+      justify-content: center;
+      align-items: flex-start;
+      overflow-y: auto;
+      padding: 30px 16px;
+      backdrop-filter: blur(4px);
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+      animation: fadeIn 0.25s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .modal-box {
+      background-color: var(--netflix-surface);
+      width: 100%;
+      max-width: 850px;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.95);
+      position: relative;
+      margin-bottom: 40px;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      z-index: 30;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background-color: rgba(24, 24, 24, 0.85);
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .modal-hero {
+      position: relative;
+      height: 360px;
+      width: 100%;
+    }
+
+    .modal-hero img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .modal-hero-gradient {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, var(--netflix-surface) 4%, rgba(24, 24, 24, 0.35) 55%, transparent 100%);
+    }
+
+    .modal-hero-content {
+      position: absolute;
+      bottom: 24px;
+      left: 32px;
+      right: 32px;
+      z-index: 10;
+    }
+
+    .modal-title {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: clamp(2rem, 4vw, 3rem);
+      margin-bottom: 14px;
+    }
+
+    .modal-body {
+      padding: 10px 32px 36px 32px;
+    }
+
+    .modal-info-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 28px;
+      margin-bottom: 12px;
+    }
+
+    .modal-meta-line {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.95rem;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .hd-badge {
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      padding: 0 5px;
+      font-size: 0.72rem;
+      border-radius: 2px;
+      color: #d2d2d2;
+    }
+
+    .modal-subtitle {
+      font-size: 1.15rem;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    .modal-story {
+      font-size: 0.95rem;
+      line-height: 1.65;
+      color: #d8d8d8;
+      margin-bottom: 12px;
+    }
+
+    .modal-credits {
+      font-size: 0.88rem;
+      line-height: 1.6;
+    }
+
+    .modal-credits p {
+      margin-bottom: 10px;
+      color: #ffffff;
+    }
+
+    .modal-credits span {
+      color: var(--netflix-gray);
+    }
+
+    /* ================= REPRODUCTOR FULLSCREEN ================= */
+    .player-overlay {
+      position: fixed;
+      inset: 0;
+      background: #000;
+      z-index: 200;
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .player-overlay.open {
+      display: flex;
+    }
+
+    .player-overlay video {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .player-back-btn {
+      position: absolute;
+      top: 24px;
+      left: 24px;
+      z-index: 210;
+      background: rgba(15, 15, 15, 0.75);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      padding: 10px 18px;
+      border-radius: 4px;
+      font-size: 0.92rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+
+    /* ================= VISOR DE FOTOS Y ÁLBUMES ================= */
+    .photo-lightbox {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.94);
+      z-index: 9999;
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      backdrop-filter: blur(8px);
+    }
+
+    .photo-lightbox.open {
+      display: flex;
+    }
+
+    .album-badge {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: rgba(15, 15, 15, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      color: #ffffff;
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 3px;
+    }
+
+    .lightbox-stage {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      max-width: 900px;
+      min-height: 250px;
+    }
+
+    .lightbox-stage img {
+      max-width: 85%;
+      max-height: 72vh;
+      border-radius: 6px;
+      object-fit: contain;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9);
+    }
+
+    .lightbox-nav {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      background: rgba(20, 20, 20, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 10000;
+      transition: background 0.2s, transform 0.2s;
+    }
+
+    .lightbox-nav:hover {
+      background: var(--netflix-red);
+      border-color: var(--netflix-red);
+      transform: translateY(-50%) scale(1.08);
+    }
+
+    .lightbox-prev { left: 10px; }
+    .lightbox-next { right: 10px; }
+
+    #lightboxCaption {
+      margin-top: 14px;
+      font-size: 1.05rem;
+      text-align: center;
+      max-width: 650px;
+      color: #f3f3f3;
+    }
+
+    .lightbox-counter {
+      margin-top: 6px;
+      font-size: 0.78rem;
+      letter-spacing: 1.5px;
+      color: #999999;
+      text-transform: uppercase;
+    }
+
+    .lightbox-close-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: rgba(24, 24, 24, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 10001;
+    }
+
+    /* ================= ADAPTACIÓN PERFECTA PARA CELULAR ================= */
+    @media (max-width: 900px) {
+      .nav-links {
+        display: none;
+      }
+
+      .carousel-row {
+        display: flex;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        gap: 10px;
+        padding-bottom: 8px;
+        scrollbar-width: none;
+      }
+
+      .carousel-row::-webkit-scrollbar {
+        display: none;
+      }
+
+      .fav-card {
+        flex: 0 0 68%;
+        scroll-snap-align: start;
+      }
+
+      .fav-card-caption {
+        opacity: 1;
+      }
+
+      .envelopes-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 640px) {
+      .hero {
+        min-height: 85vh;
+        padding-top: 90px;
+      }
+
+      .mute-toggle {
+        bottom: auto;
+        top: 85px;
+        width: 38px;
+        height: 38px;
+      }
+
+      .hero-buttons {
+        width: 100%;
+      }
+
+      .btn {
+        flex: 1 1 45%;
+        padding: 11px 14px;
+        font-size: 0.92rem;
+      }
+
+      .envelopes-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .letter-paper {
+        padding: 32px 22px 26px 22px;
+      }
+
+      .modal-hero {
+        height: 240px;
+      }
+
+      .modal-hero-content {
+        left: 20px;
+        right: 20px;
+        bottom: 16px;
+      }
+
+      .modal-body {
+        padding: 10px 20px 28px 20px;
+      }
+
+      .modal-info-grid {
+        grid-template-columns: 1fr;
+        gap: 18px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ================= PANTALLA 1: INTRO OFICIAL NETFLIX ================= -->
+  <div class="intro-screen" id="introScreen" onclick="handleIntroInteraction()">
+    <div class="netflix-intro-stage" id="netflixStage">
+      <div class="n-pillar n-pillar-left"></div>
+      <div class="n-diagonal-ribbon"></div>
+      <div class="n-pillar n-pillar-right"></div>
+      <div class="n-glow-core"></div>
+
+      <div class="netflix-spectrum" id="netflixSpectrum"></div>
+    </div>
+
+    <div class="sound-unlock-banner hidden-hint" id="soundUnlockHint">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#E50914" stroke-width="2.2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+      Toca la pantalla para iniciar con sonido
+    </div>
+  </div>
+
+  <!-- ================= PANTALLA 2: ¿QUIÉN ESTÁ VIENDO? ================= -->
+  <div class="profiles-screen" id="profilesScreen">
+    <div class="profiles-logo-top">NETFLIX</div>
+    <h2 class="profiles-title">¿Quién está viendo ahora?</h2>
+
+    <div class="profiles-grid">
+      <div class="profile-card" onclick="selectGirlProfile('mi.netflix/g1.jpg')">
+        <div class="profile-img-box">
+          <img src="mi.netflix/g1.jpg" alt="Perfil Ella">
+        </div>
+        <span class="profile-name">Mi Niña</span>
+      </div>
+
+      <div class="profile-card" onclick="openSpecialMyProfile('mi.netflix/g2.jpg')">
+        <div class="profile-img-box">
+          <img src="mi.netflix/g2.jpg" alt="Mi Perfil">
+        </div>
+        <span class="profile-name">Tu noviecito</span>
+      </div>
+
+      <div class="profile-card" onclick="openPinPrompt()">
+        <div class="profile-img-box">
+          <img src="mi.netflix/D1.jpg" alt="Secreto">
+          <span class="lock-badge">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          </span>
+        </div>
+        <span class="profile-name">Carta Secreta</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MENSAJE ESPECIAL AL ELEGIR TU PERFIL ================= -->
+  <div class="special-profile-overlay" id="specialProfileOverlay">
+    <div class="special-card-box">
+      <img id="specialAvatarImg" src="mi.netflix/g2.jpg" alt="Mi Perfil" class="special-avatar-ring">
+      <div class="special-eyebrow">Edición Exclusiva</div>
+      <h3 class="special-message-title">Mi niña, esto es solo para ti, disfrútalo al máximo.</h3>
+      <p class="special-message-sub">
+        Cada detalle, fotografía y melodía de esta producción fue creada pensando en ti y en lo feliz que me haces todos los días.
+      </p>
+      <div class="special-actions">
+        <button class="btn btn-info" onclick="backToProfilesFromSpecial()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+          Regresar a los perfiles
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MODAL DE PIN PARA CARTA SECRETA ================= -->
+  <div class="pin-overlay" id="pinOverlay">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#E50914" stroke-width="2" style="margin-bottom:12px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+    <h3 style="font-size: 1.45rem; font-weight: 500; margin-bottom: 8px;">Ingresa nuestra fecha especial</h3>
+    <p style="color: #999; font-size: 0.88rem;">Pista: Día, mes y año de nuestro aniversario (6 dígitos)</p>
+    <input type="password" maxlength="6" inputmode="numeric" id="pinInput" class="pin-input" placeholder="••••••" onkeyup="checkPin()">
+    <p id="pinError" style="color: var(--netflix-red); font-size: 0.85rem; min-height: 20px;"></p>
+    <button class="btn btn-info" style="margin-top: 12px;" onclick="closePinPrompt()">Regresar a los perfiles</button>
+  </div>
+
+  <!-- ================= BARRA SUPERIOR ================= -->
+  <header class="navbar" id="navbar">
+    <div class="nav-left">
+      <a href="#" class="netflix-logo">NETFLIX</a>
+      <ul class="nav-links">
+        <li><a href="#" class="active">Inicio</a></li>
+        <li><a href="#top10">Top 5</a></li>
+        <li><a href="#favourites">Favoritos</a></li>
+        <li><a href="#reasons">Razones</a></li>
+        <li><a href="#envelopes">Cartitas</a></li>
+      </ul>
+    </div>
+    <div class="nav-right">
+      <button class="switch-profile-btn" onclick="openProfiles()">Regresar a perfiles</button>
+      <img id="activeAvatar" src="mi.netflix/g1.jpg" alt="Perfil" class="profile-avatar" onclick="openProfiles()" title="Cambiar perfil">
+    </div>
+  </header>
+
+  <!-- ================= PORTADA PRINCIPAL CON VIDEO ================= -->
+  <section class="hero">
+    <div class="hero-video-container">
+      <video id="bgVideo" class="hero-video" loop muted playsinline preload="auto">
+        <source src="mi.netflix/intro.mp4" type="video/mp4">
+      </video>
+      <div class="hero-vignette-left"></div>
+      <div class="hero-vignette-bottom"></div>
+    </div>
+
+    <button class="mute-toggle" id="muteBtn" title="Activar/Silenciar sonido" onclick="toggleMute()">
+      <svg id="iconMuted" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+      <svg id="iconUnmuted" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+    </button>
+
+    <div class="hero-content">
+      <div class="series-badge"><span>N</span> S E R I E S</div>
+
+      <h1 class="hero-title">Un hogar donde habita mi amor</h1>
+
+      <div class="top1-ranking">
+        <div class="top10-box">TOP<br>10</div>
+        <span>#1 en Romance Hoy</span>
+      </div>
+
+      <div class="hero-meta">
+        <span class="match-score">100% Match</span>
+        <span>•</span>
+        <span>2026 - EN EMISIÓN</span>
+        <span>•</span>
+        <span>Romance & Aventuras</span>
+      </div>
+
+      <div class="love-timer-pill">
+        <span class="timer-dot"></span>
+        <span id="loveTimer">Calculando nuestro tiempo juntos...</span>
+      </div>
+
+      <p class="hero-description">
+        Cuando no encontraba un sentido a mis días, apareció aquella niña hermosa que, sin darse cuenta, comenzó a cambiar tantas cosas dentro de mí. Desde entonces he comprendido lo que es el amor, lo bonito que es tener a alguien con quien compartir mis días y lo especial que puede llegar a ser una persona en nuestra vida. Y esa personita eres tú...
+        <br><br>
+        A veces pienso en todas las vueltas que tuvo que dar la vida para que nuestros caminos se encontraran, y qué bonito es saber que, entre tantas posibilidades, tuve la suerte de coincidir contigo. No sé qué nos tenga preparado el destino, pero sí sé que, de todos mis destinos, volvería a elegir encontrarte a ti.
+      </p>
+
+      <div class="hero-buttons">
+        <button class="btn btn-play" onclick="openPlayer()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          Play
+        </button>
+        <button class="btn btn-info" onclick="openModal()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+          More Info
+        </button>
+        <button class="btn btn-list" id="myListBtn" onclick="toggleMyList()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Mi Lista
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= TOP 5 MOMENTOS HOY (CON VIDEOS) ================= -->
+  <section class="category-section reveal-section" id="top10">
+    <h2 class="section-title">Top 5 Momentos de Nosotros Hoy (Hay muchos más pero no me decido chula :3)</h2>
+    <div class="top10-row">
+      
+      <div class="top10-item" onclick="openTopVideo('mi.netflix/1.mp4')">
+        <div class="top10-number">1</div>
+        <div class="top10-poster">
+          <video src="mi.netflix/1.mp4" muted playsinline preload="auto"></video>
+          <div class="top10-play-badge">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          </div>
+          <div class="top10-label">Esooo Mi Amoooor :D</div>
+        </div>
+      </div>
+
+      <div class="top10-item" onclick="openTopVideo('mi.netflix/2.mp4')">
+        <div class="top10-number">2</div>
+        <div class="top10-poster">
+          <video src="mi.netflix/2.mp4" muted playsinline preload="auto"></video>
+          <div class="top10-play-badge">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          </div>
+          <div class="top10-label">Amigo pepe xD</div>
+        </div>
+      </div>
+
+      <div class="top10-item" onclick="openTopVideo('mi.netflix/3.mp4')">
+        <div class="top10-number">3</div>
+        <div class="top10-poster">
+          <video src="mi.netflix/3.mp4" muted playsinline preload="auto"></video>
+          <div class="top10-play-badge">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          </div>
+          <div class="top10-label">Acaso es?... Spidermaaan :O</div>
+        </div>
+      </div>
+
+      <div class="top10-item" onclick="openTopVideo('mi.netflix/4.mp4')">
+        <div class="top10-number">4</div>
+        <div class="top10-poster">
+          <video src="mi.netflix/4.mp4" muted playsinline preload="auto"></video>
+          <div class="top10-play-badge">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          </div>
+          <div class="top10-label">Nunca quería que acabara el día :c (Creo que se notaba xD)</div>
+        </div>
+      </div>
+
+      <div class="top10-item" onclick="openTopVideo('mi.netflix/5.mp4')">
+        <div class="top10-number">5</div>
+        <div class="top10-poster">
+          <video src="mi.netflix/5.mp4" muted playsinline preload="auto"></video>
+          <div class="top10-play-badge">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          </div>
+          <div class="top10-label">Preparando una pipsita :D</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ================= OUR FAVOURITES (ÁLBUMES POR CITA) ================= -->
+  <section class="category-section reveal-section" id="favourites">
+    <h2 class="section-title">Favoritos</h2>
+    <div class="carousel-row">
+      
+      <div class="fav-card" onclick="openAlbum(0)">
+        <span class="album-badge">Álbum</span>
+        <img src="mi.netflix/P1.jpg" alt="Fav 1">
+        <div class="fav-card-caption">Cita - Parquecito héroes :D</div>
+      </div>
+
+      <div class="fav-card" onclick="openAlbum(1)">
+        <span class="album-badge">Álbum</span>
+        <img src="mi.netflix/V1.jpeg" alt="Fav 2">
+        <div class="fav-card-caption">ALBUM VARIADO 1 :O</div>
+      </div>
+
+      <div class="fav-card" onclick="openAlbum(2)">
+        <span class="album-badge">Álbum</span>
+        <img src="mi.netflix/GD1.jpg" alt="Fav 3">
+        <div class="fav-card-caption">Viajecito Cecyte - (Canijines, se pasaron con el camión xD)</div>
+      </div>
+
+      <div class="fav-card" onclick="openAlbum(3)">
+        <span class="album-badge">Álbum</span>
+        <img src="mi.netflix/VA1.jpeg" alt="Fav 4">
+        <div class="fav-card-caption">ALBUM VARIADO 2 :O</div>
+      </div>
+
+      <div class="fav-card" onclick="openAlbum(4)">
+        <span class="album-badge">Álbum</span>
+        <img src="mi.netflix/C1.jpg" alt="Fav 5">
+        <div class="fav-card-caption">Cuando fuimos a Chelito lindo :3</div>
+      </div>
+
+      <div class="fav-card" onclick="openAlbum(5)">
+        <span class="album-badge">Álbum</span>
+        <img src="mi.netflix/CI1.jpeg" alt="Fav 6">
+        <div class="fav-card-caption">En el cine con nuestros amiwitos :3</div>
+      </div>
+
+      <div class="fav-card" onclick="openAlbum(6)">
+        <span class="album-badge">Álbum</span>
+        <img src="mi.netflix/F3.jpeg" alt="Fav 7">
+        <div class="fav-card-caption">FINAAAAAVV :D</div>
+      </div>
+
+      <div class="fav-card" onclick="openAlbum(7)">
+        <span class="album-badge">Álbum</span>
+        <img src="mi.netflix/D1.jpg" alt="Fav 8">
+        <div class="fav-card-caption">Gracias por estar para mí siempre corazón, aquí estoy para ti no lo olvides mi princesa :3</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ================= RAZONES POR LAS QUE TE AMO ================= -->
+  <section class="category-section reveal-section" id="reasons">
+    <h2 class="section-title">Razones por las que me sigo enamorando cada dia</h2>
+    <div class="reasons-box">
+      <div class="reason-counter-badge" id="reasonBadge">Capítulo 01 — Razón 1 de ∞</div>
+      <div class="reason-text-display" id="reasonDisplay">
+        "Esa manera tuya de ver el mundo."
+      </div>
+      <button class="btn btn-play" onclick="nextReason()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>
+        Siguiente razón
+      </button>
+    </div>
+  </section>
+
+  <!-- ================= CARTAS "ÁBREME CUANDO..." ================= -->
+  <section class="category-section reveal-section" id="envelopes" style="padding-bottom: 65px;">
+    <h2 class="section-title">Unas pequeñas cartitas :3: Ábreme Cuando...</h2>
+    <div class="envelopes-grid">
+      <div class="envelope-card" onclick="openLetter(0)">
+        <div class="envelope-icon-box">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        </div>
+        <div class="envelope-meta">
+          <span class="envelope-tag">Carta 01</span>
+          <span class="envelope-label">Ábreme cuando me extrañes</span>
+        </div>
+      </div>
+
+      <div class="envelope-card" onclick="openLetter(1)">
+        <div class="envelope-icon-box">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        </div>
+        <div class="envelope-meta">
+          <span class="envelope-tag">Carta 02</span>
+          <span class="envelope-label">Ábreme si tuviste un mal día</span>
+        </div>
+      </div>
+
+      <div class="envelope-card" onclick="openLetter(2)">
+        <div class="envelope-icon-box">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        </div>
+        <div class="envelope-meta">
+          <span class="envelope-tag">Carta 03</span>
+          <span class="envelope-label">Ábreme antes de irte a dormir</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= POPUP PARA CARTAS "ÁBREME CUANDO..." ================= -->
+  <div class="letter-popup" id="letterPopup" onclick="closeLetter()">
+    <div class="letter-paper" onclick="event.stopPropagation()">
+      <div class="letter-seal">♥</div>
+      <h3 id="letterTitle">Para ti, mi amor</h3>
+      <div id="letterBody"></div>
+      <div class="letter-close-wrap">
+        <button class="btn btn-play" onclick="closeLetter()">Cerrar carta</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= VENTANA EMERGENTE "MORE INFO" / CARTA ================= -->
+  <div class="modal-backdrop" id="infoModal" onclick="closeModalOutside(event)">
+    <div class="modal-box">
+      <button class="modal-close" onclick="closeModal()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+
+      <div class="modal-hero">
+        <img src="mi.netflix/D1.jpg" alt="Portada Modal">
+        <div class="modal-hero-gradient"></div>
+        <div class="modal-hero-content">
+          <div class="series-badge"><span>N</span> S E R I E S</div>
+          <h2 class="modal-title">Season 1: Us</h2>
+          <button class="btn btn-play" onclick="closeModal(); openPlayer();">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            Play
+          </button>
+        </div>
+      </div>
+
+      <div class="modal-body">
+        <div class="modal-info-grid">
+          <div>
+            <div class="modal-meta-line">
+              <span class="match-score">100% Match</span>
+              <span>2026</span>
+              <span>•</span>
+              <span>Romance</span>
+              <span class="hd-badge">HD</span>
+            </div>
+
+            <h3 class="modal-subtitle">Es oficial: Nuestra historia aún tiene muchos episodios por delante ♡</h3>
+
+            <p class="modal-story">
+              Si nuestra historia fuera una serie, estoy seguro de que no tendría un solo
+              episodio favorito, porque cada momento contigo tiene algo que lo hace especial.
+              Me encanta que, incluso después de todo este tiempo, sigas siendo esa personita
+              con la que quiero compartir mis días, contarle hasta las cosas más pequeñas y
+              con quien siempre quiero terminar hablando antes de dormir. Me quedo con nuestras
+              risas, nuestras ocurrencias, cada aventura y hasta esos momentos que parecen
+              insignificantes, pero que contigo se vuelven recuerdos que guardo con muchísimo
+              cariño. Y lo más bonito es saber que todavía nos quedan tantas cosas por vivir,
+              lugares por conocer, abrazos por darnos y capítulos por escribir. Si algo tengo
+              claro, es que quiero seguir eligiéndote para protagonizar todos los que vienen.
+            </p>
+            <p class="modal-story">
+              ¿Y sobre lo que sigue? Digamos que los mejores capítulos apenas están por escribirse. Te amo con todo mi corazón, mi niña.
+            </p>
+          </div>
+
+          <div class="modal-credits">
+            <p><span>Protagonistas:</span> Tú y Yo</p>
+            <p><span>Géneros:</span> Romance, Comedia, Documental, Aventuras</p>
+            <p><span>Esta serie es:</span> Divertida, Romántica, Inolvidable</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= REPRODUCTOR FULLSCREEN ================= -->
+  <div class="player-overlay" id="videoPlayerOverlay">
+    <button class="player-back-btn" onclick="closePlayer()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+      Volver
+    </button>
+    <video id="fullPlayerVideo" controls playsinline>
+      <source src="mi.netflix/intro.mp4" type="video/mp4">
+    </video>
+  </div>
+
+  <!-- ================= VISOR DE FOTOS CON CARRUSEL INTERNO ================= -->
+  <div class="photo-lightbox" id="photoLightbox" onclick="closePhoto()">
+    <button class="lightbox-close-btn" onclick="event.stopPropagation(); closePhoto()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+
+    <div class="lightbox-stage" onclick="event.stopPropagation()">
+      <button class="lightbox-nav lightbox-prev" id="lbPrevBtn" onclick="event.stopPropagation(); changeAlbumSlide(-1)">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+
+      <img id="lightboxImg" src="" alt="Foto ampliada">
+
+      <button class="lightbox-nav lightbox-next" id="lbNextBtn" onclick="event.stopPropagation(); changeAlbumSlide(1)">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+    </div>
+
+    <p id="lightboxCaption" onclick="event.stopPropagation()"></p>
+    <div id="lightboxCounter" class="lightbox-counter" onclick="event.stopPropagation()"></div>
+  </div>
+
+  <script>
+    const SONIDO_NETFLIX_URL = "mi.netflix/N.mp3";
+    const FECHA_INICIO = new Date(2026, 4, 11, 0, 0, 0);
+    const PIN_SECRETO = "110526";
+
+    const ALBUMES_FAVORITOS = [
+      [
+        { src: "mi.netflix/P1.jpg", text: "Cita - Parquecito héroes :D" },
+        { src: "mi.netflix/P2.jpg", text: "" },
+        { src: "mi.netflix/P3.jpg", text: "" },
+        { src: "mi.netflix/P4.jpg", text: "" },
+        { src: "mi.netflix/P5.jpeg", text: "" },
+        { src: "mi.netflix/P6.jpeg", text: "" },
+        { src: "mi.netflix/P7.jpeg", text: "" },
+        { src: "mi.netflix/P8.jpeg", text: "" },
+        { src: "mi.netflix/P9.jpeg", text: "" }
+      ],
+      [
+        { src: "mi.netflix/V1.jpeg", text: "ALBUM VARIADO 1 :O" },
+        { src: "mi.netflix/V2.jpeg", text: "" },
+        { src: "mi.netflix/V3.jpeg", text: "" },
+        { src: "mi.netflix/V4.jpeg", text: "" },
+        { src: "mi.netflix/V5.jpeg", text: "" },
+        { src: "mi.netflix/V6.jpeg", text: "" },
+        { src: "mi.netflix/V7.jpeg", text: "" },
+        { src: "mi.netflix/V8.jpeg", text: "" },
+        { src: "mi.netflix/V9.jpeg", text: "" },
+        { src: "mi.netflix/V10.jpeg", text: "" }
+      ],
+      [
+        { src: "mi.netflix/GD1.jpg", text: "Viajecito Cecyte - (Canijines, se pasaron con el camión xD)" },
+        { src: "mi.netflix/GD2.jpg", text: "" },
+        { src: "mi.netflix/GD3.jpeg", text: "" },
+        { src: "mi.netflix/GD4.jpeg", text: "" },
+        { src: "mi.netflix/GD5.jpeg", text: "" },
+        { src: "mi.netflix/GD6.jpeg", text: "" },
+        { src: "mi.netflix/GD7.jpeg", text: "" },
+        { src: "mi.netflix/GD8.jpeg", text: "" },
+        { src: "mi.netflix/GD9.jpeg", text: "" }
+      ],
+      [
+        { src: "mi.netflix/VA1.jpeg", text: "ALBUM VARIADO 2 :O" },
+        { src: "mi.netflix/VA2.jpeg", text: "" },
+        { src: "mi.netflix/VA3.jpeg", text: "" },
+        { src: "mi.netflix/VA4.jpeg", text: "" },
+        { src: "mi.netflix/VA5.jpeg", text: "" },
+        { src: "mi.netflix/VA6.jpeg", text: "" },
+        { src: "mi.netflix/VA7.jpeg", text: "" },
+        { src: "mi.netflix/VA8.jpeg", text: "" },
+        { src: "mi.netflix/VA9.jpeg", text: "" },
+        { src: "mi.netflix/VA10.jpeg", text: "" },
+        { src: "mi.netflix/VA11.jpeg", text: "" }
+      ],
+      [
+        { src: "mi.netflix/C1.jpg", text: "Cuando fuimos a Chelito lindo :3" },
+        { src: "mi.netflix/C2.jpeg", text: "" },
+        { src: "mi.netflix/C3.jpeg", text: "" },
+        { src: "mi.netflix/C4.jpeg", text: "" },
+        { src: "mi.netflix/C5.jpeg", text: "" },
+        { src: "mi.netflix/C6.jpeg", text: "" },
+        { src: "mi.netflix/C7.jpeg", text: "" }
+      ],
+      [
+        { src: "mi.netflix/CI1.jpeg", text: "En el cine con nuestros amiwitos :3" },
+        { src: "mi.netflix/CI2.jpeg", text: "" },
+        { src: "mi.netflix/CI3.jpeg", text: "" },
+        { src: "mi.netflix/CI4.jpeg", text: "" },
+        { src: "mi.netflix/CI5.jpeg", text: "" },
+        { src: "mi.netflix/CI6.jpeg", text: "" }
+      ],
+      [
+        { src: "mi.netflix/F2.jpeg", text: "FINAAAAAVV :D" },
+        { src: "mi.netflix/F3.jpeg", text: "" },
+        { src: "mi.netflix/F4.jpeg", text: "" },
+        { src: "mi.netflix/F5.jpeg", text: "" },
+        { src: "mi.netflix/F6.jpeg", text: "" },
+        { src: "mi.netflix/F7.jpeg", text: "" },
+        { src: "mi.netflix/F8.jpeg", text: "" },
+        { src: "mi.netflix/F9.jpeg", text: "" },
+        { src: "mi.netflix/F10.jpeg", text: "" }
+      ],
+      [
+        { src: "mi.netflix/D1.jpg", text: "Gracias por estar para mí siempre corazón, aquí estoy para ti no lo olvides mi princesa :3" },
+        { src: "mi.netflix/D2.jpeg", text: "" },
+        { src: "mi.netflix/D4.jpeg", text: "" },
+        { src: "mi.netflix/D5.jpeg", text: "" },
+        { src: "mi.netflix/D6.jpeg", text: "" },
+        { src: "mi.netflix/D7.jpeg", text: "" },
+        { src: "mi.netflix/D8.jpeg", text: "" },
+        { src: "mi.netflix/D9.jpeg", text: "" },
+        { src: "mi.netflix/D10.jpeg", text: "" },
+        { src: "mi.netflix/D11.jpeg", text: "" }
+      ]
+    ];
+
+    const RAZONES_AMOR = [
+      "Esa manera tuya de ver el mundo.",
+      "La paz y calidez que siento al abrazarte mi princesa.",
+      "Porque disfruto cada momento contigo sin importar qué hagamos :3",
+      "Porque tú me haces sentir importante incluso cuando yo no lo veo.",
+      "Sin importar cuánto tiempo pase, cada vez que te veo siento mariposas en el estómago.",
+      "Me encanta tu personalidad, carisma y todo lo que te hace ser tú, me encantas por quien eres.",
+      "El cómo nos dejamos llevar cuando te beso uwu.",
+      "Porque eres mi primer pensamiento al despertar y el último al dormir."
+    ];
+
+    const CARTAS_TIEMPO = [
+      {
+        titulo: "Para cuando me extrañes",
+        texto: `
+          <div class="letter-content">
+            <h2>Mi niña hermosa...</h2>
+            <p>
+              A pesar de la distancia, quiero que sepas que te amo con todo mi corazón
+              y que siempre voy a estar aquí para ti. Quiero que disfrutes cada día de
+              tu viaje, corazón, que aproveches cada momento y que, cuando haya ocasiones
+              en las que desearías que yo estuviera ahí contigo, no sientas culpa por
+              estar lejos de mí. Al contrario, quiero que disfrutes aún más, que vivas
+              cada experiencia y que guardes cada recuerdo bonito. Disfrútalo por ti y
+              también un poquito por mí.
+            </p>
+            <p>
+              Aquí estoy, esperándote y contando los días para volver a verte, para
+              poder abrazarte y tenerte cerquita otra vez. Y no creas que no te extraño,
+              mi niña, porque de verdad no sabes cuánto lo hago. Hay momentos en los que
+              quisiera estar ahí contigo, compartir todo lo que estás viviendo y
+              acompañarte en cada pequeña cosa. Pero también quiero que sepas que,
+              mientras tú disfrutas de esta etapa, yo estoy aprovechando este tiempo
+              para seguir mejorando, para crecer como persona y poder darte cada día
+              una mejor versión de mí.
+            </p>
+            <p>
+              No quiero que la distancia se convierta en una preocupación para ti,
+              quiero que tengas la tranquilidad de saber que aquí tienes a alguien
+              que te ama, que te espera y que se alegra de verte feliz, incluso cuando
+              no puede estar a tu lado.
+            </p>
+            <p class="letter-ending">
+              Te amo con todo mi corazón, hoy, mañana y siempre.
+            </p>
+            <div class="letter-signature">
+              <span>Con mucho amor,</span>
+              <strong>tu noviecito uwu ♡</strong>
+            </div>
+          </div>
+        `
+      },
+      {
+        titulo: "Para cuando hayas tenido un mal día",
+        texto: `
+          <div class="letter-content">
+            <h2>Para cuando hayas tenido un mal día...</h2>
+            <p>
+              Respira hondo, mi niña hermosa. Sé que hay días en los que las cosas
+              no salen como esperabas, en los que todo parece pesar un poquito más
+              y simplemente quisieras dejar de pensar en tantas cosas. Pero quiero
+              que sepas que no tienes que poder con todo siempre, también tienes
+              derecho a cansarte, a descansar y a tener días en los que simplemente
+              no te sientas bien.
+            </p>
+            <p>
+              Ojalá pudiera estar ahí contigo para abrazarte, llenarte de besitos
+              y hacerte olvidar, aunque fuera por un ratito, todo aquello que te
+              hizo sentir mal. Quiero que nunca olvides lo increíble que eres,
+              lo mucho que admiro tu forma de ser y lo orgulloso que estoy de ti,
+              incluso en esos días en los que tú misma no logras verlo.
+            </p>
+            <p>
+              No te exijas tanto, corazón. Date un momento para ti, descansa y
+              recuerda que un día difícil no cambia lo maravillosa que eres ni
+              todo lo bonito que hay en ti.
+            </p>
+            <p>
+              Y si hoy necesitas un poquito de cariño, recuerda que aquí tienes
+              a alguien que te ama muchísimo, que cree en ti y que siempre estará
+              feliz de escucharte, acompañarte y recordarte lo especial que eres.
+            </p>
+            <p class="letter-ending">
+              Te amo muchísimo, mi niña. ♡
+            </p>
+            <div class="letter-signature">
+              <span>Con mucho amor,</span>
+              <strong>tu noviecito uwu ♡</strong>
+            </div>
+          </div>
+        `
+      },
+      {
+        titulo: "Para antes de irte a dormir",
+        texto: `
+          <div class="letter-content">
+            <h2>Para antes de irte a dormir...</h2>
+            <p>
+              Que descanses hermoso, mi niña hermosa. Espero que hoy hayas tenido
+              momentos bonitos y que, si hubo algo que te hizo sentir mal, puedas
+              dejarlo atrás por esta noche. Quiero que cierres tus ojitos con
+              tranquilidad, sabiendo lo mucho que te amo y lo feliz que me hace
+              tenerte en mi vida.
+            </p>
+            <p>
+              A veces quisiera poder estar ahí contigo, darte un besito en la frente,
+              abrazarte y acompañarte hasta que te quedes dormidita. Pero mientras
+              llega ese momento, quiero que sepas que, incluso desde aquí, hay
+              alguien que piensa en ti antes de cerrar los ojos y que se siente
+              muy afortunado de tenerte.
+            </p>
+            <p>
+              Gracias por existir, corazón, por ser tú, por cada sonrisa, cada
+              palabra bonita y por todo el amor que me das. Eres una de las cosas
+              más bonitas que me han pasado y no sabes cuánto agradezco haberte
+              encontrado.
+            </p>
+            <p>
+              Descansa mucho, mi niña. Mañana será un nuevo día y aquí seguiré,
+              queriéndote, extrañándote y encontrando nuevas razones para
+              enamorarme todavía más de ti.
+            </p>
+            <p class="letter-ending">
+              Buenas noches, mi amor. Te amo hoy y siempre. ♡
+            </p>
+            <div class="letter-signature">
+              <span>Con mucho amor,</span>
+              <strong>tu noviecito uwu ♡</strong>
+            </div>
+          </div>
+        `
+      }
+    ];
+
+    let pendingSpecialAvatar = "";
+    let currentReasonIdx = 0;
+    let audioCtx = null;
+    let reverbNode = null;
+    let activeAlbum = [];
+    let activeSlideIndex = 0;
+    let introStarted = false;
+    let introAudioPlayed = false;
+    let introHideTimer = null;
+
+    function buildNetflixSpectrum() {
+      const container = document.getElementById('netflixSpectrum');
+      if (!container) return;
+      const palette = [
+        '#e50914', '#ff2a00', '#ff8800', '#e50914', '#00b4ff',
+        '#ff0055', '#b1060f', '#ffcc00', '#e50914', '#00e5ff',
+        '#ff1e27', '#8a0309', '#ff5500', '#e50914', '#ff007f',
+        '#0099ff', '#e50914', '#ffaa00', '#b1060f'
+      ];
+      let html = '';
+      for (let i = 0; i < 38; i++) {
+        const color = palette[i % palette.length];
+        const opacity = (0.55 + ((i * 7) % 45) / 100).toFixed(2);
+        html += `<div class="spec-ray" style="--c:${color}; --o:${opacity};"></div>`;
+      }
+      container.innerHTML = html;
+    }
+
+    function initCinemaAudio() {
+      if (!audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioContext();
+
+        const sampleRate = audioCtx.sampleRate;
+        const length = sampleRate * 2.2;
+        const impulse = audioCtx.createBuffer(2, length, sampleRate);
+        for (let channel = 0; channel < 2; channel++) {
+          const channelData = impulse.getChannelData(channel);
+          for (let i = 0; i < length; i++) {
+            channelData[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / length, 2.8);
+          }
+        }
+        reverbNode = audioCtx.createConvolver();
+        reverbNode.buffer = impulse;
+        reverbNode.connect(audioCtx.destination);
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    function playIntroSoundOnce() {
+      if (introAudioPlayed) return Promise.resolve(true);
+
+      if (SONIDO_NETFLIX_URL && SONIDO_NETFLIX_URL.trim() !== "") {
+        try {
+          const customTudum = new Audio(SONIDO_NETFLIX_URL);
+          customTudum.volume = 0.95;
+          customTudum.currentTime = 0;
+          const p = customTudum.play();
+          if (p !== undefined) {
+            return p.then(() => {
+              introAudioPlayed = true;
+              return true;
+            }).catch(() => false);
+          }
+          introAudioPlayed = true;
+          return Promise.resolve(true);
+        } catch (e) {
+          return Promise.resolve(false);
+        }
+      }
+
+      try {
+        initCinemaAudio();
+        if (audioCtx.state === 'suspended') {
+          return Promise.resolve(false);
+        }
+        introAudioPlayed = true;
+        const now = audioCtx.currentTime;
+
+        const filter = audioCtx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(650, now);
+        filter.frequency.exponentialRampToValueAtTime(180, now + 2.0);
+        filter.connect(audioCtx.destination);
+        filter.connect(reverbNode);
+
+        const osc1 = audioCtx.createOscillator();
+        const gain1 = audioCtx.createGain();
+        osc1.type = 'sine';
+        osc1.frequency.setValueAtTime(92, now);
+        osc1.frequency.exponentialRampToValueAtTime(44, now + 0.26);
+        gain1.gain.setValueAtTime(0.65, now);
+        gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.29);
+        osc1.connect(gain1);
+        gain1.connect(filter);
+        osc1.start(now);
+        osc1.stop(now + 0.3);
+
+        const chord = [
+          { freq: 73.42, type: 'sine', vol: 0.55 },
+          { freq: 110.00, type: 'triangle', vol: 0.28 },
+          { freq: 146.83, type: 'sine', vol: 0.32 },
+          { freq: 220.00, type: 'triangle', vol: 0.14 }
+        ];
+
+        chord.forEach(note => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = note.type;
+          osc.frequency.setValueAtTime(note.freq, now + 0.24);
+          osc.frequency.exponentialRampToValueAtTime(note.freq * 0.97, now + 2.1);
+
+          gain.gain.setValueAtTime(0.001, now + 0.24);
+          gain.gain.linearRampToValueAtTime(note.vol, now + 0.27);
+          gain.gain.exponentialRampToValueAtTime(0.0005, now + 2.15);
+
+          osc.connect(gain);
+          gain.connect(filter);
+          osc.start(now + 0.24);
+          osc.stop(now + 2.2);
+        });
+        return Promise.resolve(true);
+      } catch (e) {
+        return Promise.resolve(false);
+      }
+    }
+
+    function startIntroSequence() {
+      if (introStarted) return;
+      introStarted = true;
+
+      const introEl = document.getElementById('introScreen');
+      const hintEl = document.getElementById('soundUnlockHint');
+
+      introEl.classList.remove('waiting-gesture');
+      hintEl.classList.add('hidden-hint');
+
+      const stage = document.getElementById('netflixStage');
+      const clone = stage.cloneNode(true);
+      stage.parentNode.replaceChild(clone, stage);
+
+      clearTimeout(introHideTimer);
+      introHideTimer = setTimeout(() => {
+        introEl.classList.add('hidden');
+      }, 3850);
+    }
+
+    function handleIntroInteraction() {
+      if (!introStarted) {
+        playIntroSoundOnce();
+        startIntroSequence();
+      }
+    }
+
+    function playSoftChime(freq = 523.25) {
+      try {
+        initCinemaAudio();
+        const now = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, now);
+        gain.gain.setValueAtTime(0.001, now);
+        gain.gain.linearRampToValueAtTime(0.12, now + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0005, now + 0.65);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        gain.connect(reverbNode);
+        osc.start(now);
+        osc.stop(now + 0.7);
+      } catch (e) {}
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      buildNetflixSpectrum();
+
+      const introEl = document.getElementById('introScreen');
+      const hintEl = document.getElementById('soundUnlockHint');
+
+      playIntroSoundOnce().then(allowed => {
+        if (allowed) {
+          startIntroSequence();
+        } else {
+          introEl.classList.add('waiting-gesture');
+          hintEl.classList.remove('hidden-hint');
+        }
+      });
+
+      updateLoveTimer();
+      setInterval(updateLoveTimer, 1000);
+      initScrollReveal();
+
+      document.querySelectorAll('.top10-poster video').forEach(vid => {
+        vid.addEventListener('loadeddata', () => {
+          vid.currentTime = 0.5;
+        });
+      });
+    });
+
+    function initScrollReveal() {
+      const sections = document.querySelectorAll('.reveal-section');
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+          }
+        });
+      }, { threshold: 0.08 });
+
+      sections.forEach(sec => observer.observe(sec));
+
+      // Respaldo para asegurar que las secciones siempre sean visibles tras entrar
+      setTimeout(() => {
+        sections.forEach(sec => sec.classList.add('visible'));
+      }, 1500);
+    }
+
+    function nextReason() {
+      playSoftChime(587.33);
+      currentReasonIdx = (currentReasonIdx + 1) % RAZONES_AMOR.length;
+      const display = document.getElementById('reasonDisplay');
+      const badge = document.getElementById('reasonBadge');
+
+      display.style.opacity = 0;
+      display.style.transform = 'translateY(6px)';
+
+      setTimeout(() => {
+        const num = String(currentReasonIdx + 1).padStart(2, '0');
+        badge.textContent = `Capítulo ${num} — Razón ${currentReasonIdx + 1} de ∞`;
+        display.textContent = `"${RAZONES_AMOR[currentReasonIdx]}"`;
+        display.style.opacity = 1;
+        display.style.transform = 'translateY(0)';
+        launchSparkles(8);
+      }, 220);
+    }
+
+    function openLetter(index) {
+      playSoftChime(440);
+      const carta = CARTAS_TIEMPO[index];
+      document.getElementById('letterTitle').textContent = carta.titulo;
+      document.getElementById('letterBody').innerHTML = carta.texto;
+      document.getElementById('letterPopup').classList.add('open');
+      launchSparkles(12);
+    }
+
+    function closeLetter() {
+      document.getElementById('letterPopup').classList.remove('open');
+    }
+
+    function updateLoveTimer() {
+      const now = new Date();
+      const diff = Math.abs(now - FECHA_INICIO);
+
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+      const minutes = Math.floor((diff / 1000 / 60) % 60);
+      const seconds = Math.floor((diff / 1000) % 60);
+
+      const prefix = now >= FECHA_INICIO ? "Juntos desde hace" : "Faltan";
+      document.getElementById('loveTimer').textContent =
+        `${prefix} ${days} días, ${hours}h ${minutes}m ${seconds}s`;
+    }
+
+    function selectGirlProfile(avatarUrl) {
+      document.getElementById('activeAvatar').src = avatarUrl;
+      document.getElementById('profilesScreen').classList.add('hidden');
+      document.body.style.overflow = '';
+      const bgVideo = document.getElementById('bgVideo');
+      bgVideo.currentTime = 0;
+      bgVideo.play().catch(() => {});
+    }
+
+    function openSpecialMyProfile(avatarUrl) {
+      pendingSpecialAvatar = avatarUrl;
+      document.getElementById('specialAvatarImg').src = avatarUrl;
+      document.getElementById('specialProfileOverlay').classList.add('open');
+    }
+
+    function backToProfilesFromSpecial() {
+      document.getElementById('specialProfileOverlay').classList.remove('open');
+    }
+
+    function openProfiles() {
+      document.getElementById('profilesScreen').classList.remove('hidden');
+    }
+
+    function openPinPrompt() {
+      document.getElementById('pinInput').value = '';
+      document.getElementById('pinError').textContent = '';
+      document.getElementById('pinOverlay').classList.add('open');
+      setTimeout(() => document.getElementById('pinInput').focus(), 100);
+    }
+
+    function closePinPrompt() {
+      document.getElementById('pinOverlay').classList.remove('open');
+    }
+
+    function checkPin() {
+      const val = document.getElementById('pinInput').value;
+      if (val.length === 6) {
+        if (val === PIN_SECRETO) {
+          closePinPrompt();
+          document.getElementById('profilesScreen').classList.add('hidden');
+          openModal();
+          launchSparkles(18);
+        } else {
+          document.getElementById('pinError').textContent = 'Código incorrecto. Intenta nuevamente.';
+          document.getElementById('pinInput').value = '';
+        }
+      }
+    }
+
+    function toggleMyList() {
+      const btn = document.getElementById('myListBtn');
+      const isAdded = btn.classList.toggle('added');
+      if (isAdded) {
+        playSoftChime(659.25);
+        btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> En Mi Lista`;
+        launchSparkles(16);
+      } else {
+        btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Mi Lista`;
+      }
+    }
+
+    function launchSparkles(count = 14) {
+      for (let i = 0; i < count; i++) {
+        setTimeout(() => {
+          const dot = document.createElement('div');
+          dot.className = 'sparkle-particle';
+          dot.style.left = Math.random() * 94 + 'vw';
+          dot.style.bottom = '10px';
+          document.body.appendChild(dot);
+          setTimeout(() => dot.remove(), 2200);
+        }, i * 75);
+      }
+    }
+
+    window.addEventListener('scroll', () => {
+      const navbar = document.getElementById('navbar');
+      navbar.classList.toggle('scrolled', window.scrollY > 40);
+    });
+
+    function toggleMute() {
+      const video = document.getElementById('bgVideo');
+      video.muted = !video.muted;
+      document.getElementById('iconMuted').style.display = video.muted ? 'block' : 'none';
+      document.getElementById('iconUnmuted').style.display = video.muted ? 'none' : 'block';
+    }
+
+    function openModal() {
+      document.getElementById('infoModal').classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+      document.getElementById('infoModal').classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    function closeModalOutside(event) {
+      if (event.target.id === 'infoModal') closeModal();
+    }
+
+    function openPlayer() {
+      const overlay = document.getElementById('videoPlayerOverlay');
+      const fullVideo = document.getElementById('fullPlayerVideo');
+      const bgVideo = document.getElementById('bgVideo');
+
+      bgVideo.pause();
+      fullVideo.src = "mi.netflix/intro.mp4";
+      overlay.classList.add('open');
+      fullVideo.currentTime = 0;
+      fullVideo.play();
+    }
+
+    function openTopVideo(videoSrc) {
+      const overlay = document.getElementById('videoPlayerOverlay');
+      const fullVideo = document.getElementById('fullPlayerVideo');
+      const bgVideo = document.getElementById('bgVideo');
+
+      bgVideo.pause();
+      fullVideo.src = videoSrc;
+      overlay.classList.add('open');
+      fullVideo.currentTime = 0;
+      fullVideo.play();
+    }
+
+    function closePlayer() {
+      const overlay = document.getElementById('videoPlayerOverlay');
+      const fullVideo = document.getElementById('fullPlayerVideo');
+      const bgVideo = document.getElementById('bgVideo');
+
+      fullVideo.pause();
+      overlay.classList.remove('open');
+      bgVideo.play();
+    }
+
+    /* ================= ÁLBUMES Y VISOR DE FOTOS ================= */
+    function openAlbum(albumIndex) {
+      if (!ALBUMES_FAVORITOS[albumIndex]) return;
+      activeAlbum = ALBUMES_FAVORITOS[albumIndex];
+      activeSlideIndex = 0;
+      renderAlbumSlide();
+      document.getElementById('photoLightbox').classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function changeAlbumSlide(direction) {
+      if (!activeAlbum || activeAlbum.length <= 1) return;
+      activeSlideIndex = (activeSlideIndex + direction + activeAlbum.length) % activeAlbum.length;
+      renderAlbumSlide();
+    }
+
+    function renderAlbumSlide() {
+      const slide = activeAlbum[activeSlideIndex];
+      document.getElementById('lightboxImg').src = slide.src;
+      document.getElementById('lightboxCaption').textContent = slide.text;
+
+      const hasMultiple = activeAlbum.length > 1;
+      document.getElementById('lbPrevBtn').style.display = hasMultiple ? 'flex' : 'none';
+      document.getElementById('lbNextBtn').style.display = hasMultiple ? 'flex' : 'none';
+      document.getElementById('lightboxCounter').textContent = hasMultiple
+        ? `Foto ${activeSlideIndex + 1} de ${activeAlbum.length}`
+        : '';
+    }
+
+    function closePhoto() {
+      document.getElementById('photoLightbox').classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    document.addEventListener('keydown', (e) => {
+      const lb = document.getElementById('photoLightbox');
+      if (!lb.classList.contains('open')) return;
+      if (e.key === 'ArrowRight') changeAlbumSlide(1);
+      if (e.key === 'ArrowLeft') changeAlbumSlide(-1);
+      if (e.key === 'Escape') closePhoto();
+    });
+
+    let touchStartX = 0;
+    const lbBox = document.getElementById('photoLightbox');
+    lbBox.addEventListener('touchstart', (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+
+    lbBox.addEventListener('touchend', (e) => {
+      const diff = touchStartX - e.changedTouches[0].screenX;
+      if (diff > 45) changeAlbumSlide(1);
+      if (diff < -45) changeAlbumSlide(-1);
+    }, { passive: true });
+  </script>
+</body>
+</html>
