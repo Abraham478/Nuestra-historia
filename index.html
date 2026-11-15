@@ -41,7 +41,7 @@
       padding-bottom: env(safe-area-inset-bottom);
     }
 
-    /* ================= 1. INTRO OFICIAL NETFLIX ================= */
+    /* ================= 1. INTRO OFICIAL NETFLIX (SIN HUECO NEGRO Y ESPECTRO DETRÁS) ================= */
     .intro-screen {
       position: fixed;
       inset: 0;
@@ -86,16 +86,37 @@
       animation: netflixCameraZoom 3.9s cubic-bezier(0.7, 0, 0.22, 1) forwards;
     }
 
-    .netflix-intro-stage::after {
-      content: "";
+    /* Espectro de líneas de luz DETRÁS de la letra N */
+    .netflix-spectrum {
       position: absolute;
-      bottom: -14px;
-      left: -8%;
-      width: 116%;
-      height: 24px;
-      background: #000000;
-      border-radius: 50% 50% 0 0 / 100% 100% 0 0;
-      z-index: 6;
+      top: -45%;
+      bottom: -45%;
+      left: -85%;
+      right: -85%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 2px;
+      opacity: 0;
+      z-index: 1;
+      pointer-events: none;
+      animation: spectrumRibbonBurst 2.15s cubic-bezier(0.12, 0.85, 0.25, 1) 1.45s forwards;
+    }
+
+    .spec-ray {
+      flex: 1;
+      height: 160%;
+      background: linear-gradient(
+        to bottom,
+        transparent 0%,
+        var(--c) 26%,
+        #ffffff 50%,
+        var(--c) 74%,
+        transparent 100%
+      );
+      opacity: var(--o, 0.85);
+      transform: scaleY(0.1);
+      animation: rayStretch 2.0s cubic-bezier(0.16, 1, 0.3, 1) 1.45s forwards;
     }
 
     .n-pillar {
@@ -103,13 +124,14 @@
       height: 100%;
       position: relative;
       overflow: hidden;
+      z-index: 2;
       background: linear-gradient(90deg, #8b0007 0%, #b80710 45%, #99040b 100%);
     }
 
     .n-pillar-left {
       transform: scaleY(0);
       transform-origin: bottom center;
-      box-shadow: 6px 0 18px rgba(0, 0, 0, 0.75);
+      box-shadow: 6px 0 18px rgba(0, 0, 0, 0.85);
       animation: drawPillarUp 0.42s cubic-bezier(0.16, 1, 0.3, 1) 0.12s forwards;
     }
 
@@ -123,60 +145,29 @@
       transform-origin: top left;
       transform: skewX(22.5deg) scaleY(0);
       box-shadow:
-        -14px 0 26px rgba(0, 0, 0, 0.92),
-        14px 0 26px rgba(0, 0, 0, 0.92),
-        inset 0 0 12px rgba(255, 90, 90, 0.35);
-      z-index: 4;
+        -12px 0 24px rgba(0, 0, 0, 0.9),
+        12px 0 24px rgba(0, 0, 0, 0.9),
+        inset 0 0 12px rgba(255, 90, 90, 0.4);
+      z-index: 3;
       animation: drawRibbonDown 0.46s cubic-bezier(0.16, 1, 0.3, 1) 0.48s forwards;
     }
 
     .n-pillar-right {
       transform: scaleY(0);
       transform-origin: bottom center;
-      box-shadow: -6px 0 18px rgba(0, 0, 0, 0.75);
+      box-shadow: -6px 0 18px rgba(0, 0, 0, 0.85);
       animation: drawPillarUp 0.42s cubic-bezier(0.16, 1, 0.3, 1) 0.86s forwards;
     }
 
     .n-glow-core {
       position: absolute;
-      inset: 0;
-      background: radial-gradient(circle at 52% 50%, rgba(255, 255, 255, 0.95) 0%, rgba(229, 9, 20, 0.75) 35%, transparent 72%);
+      inset: -15%;
+      background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.75) 0%, rgba(229, 9, 20, 0.65) 38%, transparent 70%);
       opacity: 0;
-      z-index: 5;
+      z-index: 4;
       mix-blend-mode: screen;
-      animation: coreFlash 1.6s ease-out 1.48s forwards;
-    }
-
-    .netflix-spectrum {
-      position: absolute;
-      top: -35%;
-      bottom: -35%;
-      left: -60%;
-      right: -60%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 2px;
-      opacity: 0;
-      z-index: 5;
       pointer-events: none;
-      animation: spectrumRibbonBurst 2.15s cubic-bezier(0.12, 0.85, 0.25, 1) 1.5s forwards;
-    }
-
-    .spec-ray {
-      flex: 1;
-      height: 150%;
-      background: linear-gradient(
-        to bottom,
-        transparent 0%,
-        var(--c) 28%,
-        #ffffff 50%,
-        var(--c) 72%,
-        transparent 100%
-      );
-      opacity: var(--o, 0.9);
-      transform: scaleY(0.1);
-      animation: rayStretch 2.0s cubic-bezier(0.16, 1, 0.3, 1) 1.5s forwards;
+      animation: coreFlash 1.5s ease-out 1.45s forwards;
     }
 
     @keyframes drawPillarUp {
@@ -190,29 +181,29 @@
     }
 
     @keyframes coreFlash {
-      0% { opacity: 0; transform: scale(0.6); }
-      22% { opacity: 0.95; transform: scale(1.05); }
-      100% { opacity: 0; transform: scale(1.6); }
+      0% { opacity: 0; transform: scale(0.7); }
+      25% { opacity: 0.9; transform: scale(1.05); }
+      100% { opacity: 0; transform: scale(1.5); }
     }
 
     @keyframes netflixCameraZoom {
       0% { transform: scale(0.86) translateZ(0); opacity: 1; }
       38% { transform: scale(1.0) translateZ(0); opacity: 1; }
-      62% { transform: scale(2.4) translateX(-4px); opacity: 1; }
-      86% { transform: scale(14) translateX(-10px); opacity: 0.92; }
-      100% { transform: scale(34) translateX(-14px); opacity: 0; }
+      62% { transform: scale(2.4) translateZ(0); opacity: 1; }
+      86% { transform: scale(14) translateZ(0); opacity: 0.92; }
+      100% { transform: scale(34) translateZ(0); opacity: 0; }
     }
 
     @keyframes spectrumRibbonBurst {
-      0% { opacity: 0; transform: scaleX(0.12); }
-      18% { opacity: 1; }
-      75% { opacity: 0.95; }
-      100% { opacity: 0; transform: scaleX(4.2); }
+      0% { opacity: 0; transform: scaleX(0.15); }
+      20% { opacity: 0.95; }
+      75% { opacity: 0.9; }
+      100% { opacity: 0; transform: scaleX(3.8); }
     }
 
     @keyframes rayStretch {
       0% { transform: scaleY(0.1); }
-      100% { transform: scaleY(2.1); }
+      100% { transform: scaleY(2.0); }
     }
 
     .sound-unlock-banner {
@@ -569,7 +560,6 @@
       cursor: pointer;
     }
 
-    /* Píldoras rápidas exclusivas para celular */
     .mobile-quick-nav {
       display: none;
       gap: 8px;
@@ -618,6 +608,7 @@
       height: 100%;
       z-index: 1;
       overflow: hidden;
+      background-color: #0b0b0b;
     }
 
     .hero-video {
@@ -1162,15 +1153,17 @@
       overflow: hidden;
       position: relative;
       z-index: 2;
-      background-color: #1f1f1f;
+      background: linear-gradient(145deg, #241819 0%, #141414 100%);
+      border: 1px solid rgba(255, 255, 255, 0.12);
       box-shadow: 0 8px 20px rgba(0, 0, 0, 0.85);
     }
 
-    .top10-poster video {
+    .top10-poster img {
       width: 100%;
       height: 100%;
       object-fit: cover;
       display: block;
+      opacity: 0.72;
     }
 
     .top10-play-badge {
@@ -1181,12 +1174,13 @@
       width: 44px;
       height: 44px;
       border-radius: 50%;
-      background: rgba(0, 0, 0, 0.72);
-      border: 1.5px solid rgba(255, 255, 255, 0.9);
+      background: rgba(229, 9, 20, 0.88);
+      border: 1.5px solid rgba(255, 255, 255, 0.92);
       color: #ffffff;
       display: flex;
       align-items: center;
       justify-content: center;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.8);
     }
 
     .top10-label {
@@ -1194,8 +1188,8 @@
       bottom: 0;
       left: 0;
       right: 0;
-      background: linear-gradient(to top, rgba(0, 0, 0, 0.94), transparent);
-      padding: 12px 8px 8px 8px;
+      background: linear-gradient(to top, rgba(0, 0, 0, 0.96), rgba(0, 0, 0, 0.45), transparent);
+      padding: 16px 8px 8px 8px;
       font-size: 0.76rem;
       font-weight: 600;
       line-height: 1.25;
@@ -1360,10 +1354,11 @@
       color: var(--netflix-gray);
     }
 
-    /* ================= REPRODUCTOR FULLSCREEN ================= */
+    /* ================= REPRODUCTOR FULLSCREEN HORIZONTAL ================= */
     .player-overlay {
       position: fixed;
       inset: 0;
+      width: 100vw;
       height: 100dvh;
       background: #000;
       z-index: 200;
@@ -1381,16 +1376,17 @@
       width: 100%;
       height: 100%;
       object-fit: contain;
+      background: #000;
     }
 
     .player-back-btn {
       position: absolute;
-      top: max(20px, env(safe-area-inset-top));
-      left: 20px;
+      top: max(18px, env(safe-area-inset-top));
+      left: max(18px, env(safe-area-inset-left));
       z-index: 210;
-      background: rgba(15, 15, 15, 0.82);
+      background: rgba(15, 15, 15, 0.85);
       color: white;
-      border: 1px solid rgba(255, 255, 255, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.45);
       padding: 10px 18px;
       border-radius: 6px;
       font-size: 0.92rem;
@@ -1540,7 +1536,6 @@
         display: flex;
       }
 
-      /* Cuadrícula de 2 columnas en móvil para ver todos los álbumes sin deslizar de lado */
       .carousel-row {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
@@ -1626,12 +1621,11 @@
   <!-- ================= PANTALLA 1: INTRO OFICIAL NETFLIX ================= -->
   <div class="intro-screen" id="introScreen" onclick="handleIntroInteraction()">
     <div class="netflix-intro-stage" id="netflixStage">
+      <div class="netflix-spectrum" id="netflixSpectrum"></div>
       <div class="n-pillar n-pillar-left"></div>
       <div class="n-diagonal-ribbon"></div>
       <div class="n-pillar n-pillar-right"></div>
       <div class="n-glow-core"></div>
-
-      <div class="netflix-spectrum" id="netflixSpectrum"></div>
     </div>
 
     <div class="sound-unlock-banner hidden-hint" id="soundUnlockHint">
@@ -1730,7 +1724,7 @@
   <!-- ================= PORTADA PRINCIPAL CON VIDEO ================= -->
   <section class="hero">
     <div class="hero-video-container">
-      <video id="bgVideo" class="hero-video" loop muted playsinline preload="metadata">
+      <video id="bgVideo" class="hero-video" poster="mi.netflix/D1.jpg" loop muted playsinline preload="none">
         <source src="mi.netflix/intro.mp4" type="video/mp4">
       </video>
       <div class="hero-vignette-left"></div>
@@ -1788,7 +1782,7 @@
     </div>
   </section>
 
-  <!-- ================= TOP 5 MOMENTOS HOY (CON VIDEOS OPTIMIZADOS) ================= -->
+  <!-- ================= TOP 5 MOMENTOS HOY (CARGA BAJO DEMANDA SIN SATURAR INTERNET) ================= -->
   <section class="category-section reveal-section" id="top10">
     <h2 class="section-title">Top 5 Momentos de Nosotros Hoy (Hay muchos más pero no me decido chula :3)</h2>
     <div class="top10-row">
@@ -1796,7 +1790,7 @@
       <div class="top10-item" onclick="openTopVideo('mi.netflix/1.mp4')">
         <div class="top10-number">1</div>
         <div class="top10-poster">
-          <video src="mi.netflix/1.mp4#t=0.5" muted playsinline preload="metadata"></video>
+          <img src="mi.netflix/P1.jpg" alt="Momento 1" loading="lazy">
           <div class="top10-play-badge">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
           </div>
@@ -1807,7 +1801,7 @@
       <div class="top10-item" onclick="openTopVideo('mi.netflix/2.mp4')">
         <div class="top10-number">2</div>
         <div class="top10-poster">
-          <video src="mi.netflix/2.mp4#t=0.5" muted playsinline preload="metadata"></video>
+          <img src="mi.netflix/V1.jpeg" alt="Momento 2" loading="lazy">
           <div class="top10-play-badge">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
           </div>
@@ -1818,7 +1812,7 @@
       <div class="top10-item" onclick="openTopVideo('mi.netflix/3.mp4')">
         <div class="top10-number">3</div>
         <div class="top10-poster">
-          <video src="mi.netflix/3.mp4#t=0.5" muted playsinline preload="metadata"></video>
+          <img src="mi.netflix/GD1.jpg" alt="Momento 3" loading="lazy">
           <div class="top10-play-badge">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
           </div>
@@ -1829,7 +1823,7 @@
       <div class="top10-item" onclick="openTopVideo('mi.netflix/4.mp4')">
         <div class="top10-number">4</div>
         <div class="top10-poster">
-          <video src="mi.netflix/4.mp4#t=0.5" muted playsinline preload="metadata"></video>
+          <img src="mi.netflix/C1.jpg" alt="Momento 4" loading="lazy">
           <div class="top10-play-badge">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
           </div>
@@ -1840,7 +1834,7 @@
       <div class="top10-item" onclick="openTopVideo('mi.netflix/5.mp4')">
         <div class="top10-number">5</div>
         <div class="top10-poster">
-          <video src="mi.netflix/5.mp4#t=0.5" muted playsinline preload="metadata"></video>
+          <img src="mi.netflix/D1.jpg" alt="Momento 5" loading="lazy">
           <div class="top10-play-badge">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
           </div>
@@ -1858,49 +1852,49 @@
       
       <div class="fav-card" onclick="openAlbum(0)">
         <span class="album-badge">Álbum</span>
-        <img src="mi.netflix/P1.jpg" alt="Fav 1" loading="lazy">
+        <img src="mi.netflix/P1.jpg" alt="Fav 1" loading="lazy" decoding="async">
         <div class="fav-card-caption">Cita - Parquecito héroes :D</div>
       </div>
 
       <div class="fav-card" onclick="openAlbum(1)">
         <span class="album-badge">Álbum</span>
-        <img src="mi.netflix/V1.jpeg" alt="Fav 2" loading="lazy">
+        <img src="mi.netflix/V1.jpeg" alt="Fav 2" loading="lazy" decoding="async">
         <div class="fav-card-caption">ALBUM VARIADO 1 :O</div>
       </div>
 
       <div class="fav-card" onclick="openAlbum(2)">
         <span class="album-badge">Álbum</span>
-        <img src="mi.netflix/GD1.jpg" alt="Fav 3" loading="lazy">
+        <img src="mi.netflix/GD1.jpg" alt="Fav 3" loading="lazy" decoding="async">
         <div class="fav-card-caption">Viajecito Cecyte - (Canijines, se pasaron con el camión xD)</div>
       </div>
 
       <div class="fav-card" onclick="openAlbum(3)">
         <span class="album-badge">Álbum</span>
-        <img src="mi.netflix/VA1.jpeg" alt="Fav 4" loading="lazy">
+        <img src="mi.netflix/VA1.jpeg" alt="Fav 4" loading="lazy" decoding="async">
         <div class="fav-card-caption">ALBUM VARIADO 2 :O</div>
       </div>
 
       <div class="fav-card" onclick="openAlbum(4)">
         <span class="album-badge">Álbum</span>
-        <img src="mi.netflix/C1.jpg" alt="Fav 5" loading="lazy">
+        <img src="mi.netflix/C1.jpg" alt="Fav 5" loading="lazy" decoding="async">
         <div class="fav-card-caption">Cuando fuimos a Chelito lindo :3</div>
       </div>
 
       <div class="fav-card" onclick="openAlbum(5)">
         <span class="album-badge">Álbum</span>
-        <img src="mi.netflix/CI1.jpeg" alt="Fav 6" loading="lazy">
+        <img src="mi.netflix/CI1.jpeg" alt="Fav 6" loading="lazy" decoding="async">
         <div class="fav-card-caption">En el cine con nuestros amiwitos :3</div>
       </div>
 
       <div class="fav-card" onclick="openAlbum(6)">
         <span class="album-badge">Álbum</span>
-        <img src="mi.netflix/F3.jpeg" alt="Fav 7" loading="lazy">
+        <img src="mi.netflix/F3.jpeg" alt="Fav 7" loading="lazy" decoding="async">
         <div class="fav-card-caption">FINAAAAAVV :D</div>
       </div>
 
       <div class="fav-card" onclick="openAlbum(7)">
         <span class="album-badge">Álbum</span>
-        <img src="mi.netflix/D1.jpg" alt="Fav 8" loading="lazy">
+        <img src="mi.netflix/D1.jpg" alt="Fav 8" loading="lazy" decoding="async">
         <div class="fav-card-caption">Gracias por estar para mí siempre corazón, aquí estoy para ti no lo olvides mi princesa :3</div>
       </div>
 
@@ -1978,7 +1972,7 @@
       </button>
 
       <div class="modal-hero">
-        <img src="mi.netflix/D1.jpg" alt="Portada Modal">
+        <img src="mi.netflix/D1.jpg" alt="Portada Modal" loading="lazy">
         <div class="modal-hero-gradient"></div>
         <div class="modal-hero-content">
           <div class="series-badge"><span>N</span> S E R I E S</div>
@@ -2030,15 +2024,13 @@
     </div>
   </div>
 
-  <!-- ================= REPRODUCTOR FULLSCREEN ================= -->
+  <!-- ================= REPRODUCTOR FULLSCREEN HORIZONTAL ================= -->
   <div class="player-overlay" id="videoPlayerOverlay">
     <button class="player-back-btn" onclick="closePlayer()">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
       Volver
     </button>
-    <video id="fullPlayerVideo" controls playsinline preload="metadata">
-      <source src="mi.netflix/intro.mp4" type="video/mp4">
-    </video>
+    <video id="fullPlayerVideo" controls playsinline preload="metadata"></video>
   </div>
 
   <!-- ================= VISOR DE FOTOS CON PRECARGA Y SPINNER ================= -->
@@ -2315,9 +2307,9 @@
         '#0099ff', '#e50914', '#ffaa00', '#b1060f'
       ];
       let html = '';
-      for (let i = 0; i < 38; i++) {
+      for (let i = 0; i < 42; i++) {
         const color = palette[i % palette.length];
-        const opacity = (0.55 + ((i * 7) % 45) / 100).toFixed(2);
+        const opacity = (0.5 + ((i * 7) % 45) / 100).toFixed(2);
         html += `<div class="spec-ray" style="--c:${color}; --o:${opacity};"></div>`;
       }
       container.innerHTML = html;
@@ -2654,19 +2646,44 @@
       if (event.target.id === 'infoModal') closeModal();
     }
 
-    function openPlayer() {
-      const overlay = document.getElementById('videoPlayerOverlay');
-      const fullVideo = document.getElementById('fullPlayerVideo');
-      const bgVideo = document.getElementById('bgVideo');
+    /* ================= REPRODUCTOR FULLSCREEN HORIZONTAL AUTOMÁTICO ================= */
+    async function enterLandscapeFullscreen(containerEl, videoEl) {
+      try {
+        if (containerEl.requestFullscreen) {
+          await containerEl.requestFullscreen();
+        } else if (containerEl.webkitRequestFullscreen) {
+          await containerEl.webkitRequestFullscreen();
+        } else if (videoEl.webkitEnterFullscreen) {
+          videoEl.webkitEnterFullscreen();
+        }
+      } catch (e) {}
 
-      bgVideo.pause();
-      fullVideo.src = "mi.netflix/intro.mp4";
-      overlay.classList.add('open');
-      fullVideo.currentTime = 0;
-      fullVideo.play().catch(() => {});
+      try {
+        if (screen.orientation && screen.orientation.lock) {
+          await screen.orientation.lock('landscape');
+        }
+      } catch (e) {}
     }
 
-    function openTopVideo(videoSrc) {
+    function exitLandscapeFullscreen() {
+      try {
+        if (screen.orientation && screen.orientation.unlock) {
+          screen.orientation.unlock();
+        }
+      } catch (e) {}
+
+      try {
+        if (document.fullscreenElement || document.webkitFullscreenElement) {
+          if (document.exitFullscreen) {
+            document.exitFullscreen().catch(() => {});
+          } else if (document.webkitExitFullscreen) {
+            document.webkitExitFullscreen();
+          }
+        }
+      } catch (e) {}
+    }
+
+    function playVideoInFullscreen(videoSrc) {
       const overlay = document.getElementById('videoPlayerOverlay');
       const fullVideo = document.getElementById('fullPlayerVideo');
       const bgVideo = document.getElementById('bgVideo');
@@ -2675,7 +2692,17 @@
       fullVideo.src = videoSrc;
       overlay.classList.add('open');
       fullVideo.currentTime = 0;
+
+      enterLandscapeFullscreen(overlay, fullVideo);
       fullVideo.play().catch(() => {});
+    }
+
+    function openPlayer() {
+      playVideoInFullscreen("mi.netflix/intro.mp4");
+    }
+
+    function openTopVideo(videoSrc) {
+      playVideoInFullscreen(videoSrc);
     }
 
     function closePlayer() {
@@ -2684,9 +2711,19 @@
       const bgVideo = document.getElementById('bgVideo');
 
       fullVideo.pause();
+      fullVideo.removeAttribute('src');
+      fullVideo.load();
       overlay.classList.remove('open');
+      exitLandscapeFullscreen();
       bgVideo.play().catch(() => {});
     }
+
+    document.addEventListener('fullscreenchange', () => {
+      const overlay = document.getElementById('videoPlayerOverlay');
+      if (!document.fullscreenElement && overlay.classList.contains('open')) {
+        closePlayer();
+      }
+    });
 
     /* ================= ÁLBUMES Y VISOR DE FOTOS CON PRECARGA ================= */
     function preloadAlbumImages(album) {
@@ -2696,7 +2733,7 @@
           const img = new Image();
           img.src = item.src;
           preloadedImages.add(item.src);
-        }, index * 120);
+        }, index * 100);
       });
     }
 
