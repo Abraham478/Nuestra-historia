@@ -8,7 +8,7 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;1,400;1,500;1,600&display=swap" rel="stylesheet">
 
   <style>
     :root {
@@ -463,6 +463,146 @@
 
     .pin-input:focus {
       border-color: var(--netflix-red);
+    }
+
+    /* ================= MODAL EXCLUSIVO: CARTA SECRETA ROMÁNTICA ================= */
+    .secret-letter-overlay {
+      position: fixed;
+      inset: 0;
+      height: 100dvh;
+      background: radial-gradient(circle at top, rgba(65, 10, 20, 0.95) 0%, rgba(10, 7, 9, 0.98) 100%);
+      z-index: 9700;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 18px 14px;
+      backdrop-filter: blur(14px);
+      overflow-y: auto;
+    }
+
+    .secret-letter-overlay.open {
+      display: flex;
+      animation: fadeIn 0.45s ease;
+    }
+
+    .secret-letter-card {
+      position: relative;
+      background: linear-gradient(165deg, #24171b 0%, #171113 55%, #1f1417 100%);
+      border: 1px solid rgba(255, 182, 193, 0.28);
+      border-top: 3px solid var(--netflix-red);
+      border-radius: 16px;
+      max-width: 650px;
+      width: 100%;
+      max-height: 86dvh;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 36px 26px 30px 26px;
+      box-shadow:
+        0 30px 80px rgba(0, 0, 0, 0.96),
+        0 0 45px rgba(229, 9, 20, 0.25),
+        inset 0 0 30px rgba(255, 182, 193, 0.04);
+      animation: letterUnfold 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    .secret-letter-card::-webkit-scrollbar {
+      width: 5px;
+    }
+
+    .secret-letter-card::-webkit-scrollbar-thumb {
+      background: rgba(229, 9, 20, 0.5);
+      border-radius: 999px;
+    }
+
+    .secret-seal-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+
+    .secret-wax-seal {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #ff3344, #8f040c);
+      border: 1.5px solid rgba(255, 220, 225, 0.45);
+      box-shadow: 0 6px 22px rgba(229, 9, 20, 0.65);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.35rem;
+      color: #ffffff;
+      margin-bottom: 12px;
+      animation: heartbeatSeal 2.2s infinite ease-in-out;
+    }
+
+    @keyframes heartbeatSeal {
+      0%, 100% { transform: scale(1); }
+      15% { transform: scale(1.09); }
+      30% { transform: scale(1); }
+      45% { transform: scale(1.06); }
+    }
+
+    .secret-eyebrow {
+      font-size: 0.72rem;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #ff8fa3;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .secret-salutation {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: clamp(1.55rem, 4.8vw, 2.1rem);
+      font-style: italic;
+      font-weight: 600;
+      color: #fff0f3;
+      text-align: center;
+      margin: 10px 0 20px 0;
+      padding-bottom: 14px;
+      border-bottom: 1px solid rgba(255, 192, 203, 0.18);
+    }
+
+    .secret-body p {
+      font-size: clamp(0.95rem, 3.6vw, 1.02rem);
+      line-height: 1.82;
+      color: #ece0e4;
+      margin-bottom: 16px;
+      text-align: left;
+    }
+
+    .secret-highlight-quote {
+      background: rgba(229, 9, 20, 0.09);
+      border-left: 3px solid var(--netflix-red);
+      border-radius: 0 8px 8px 0;
+      padding: 14px 16px;
+      margin: 20px 0;
+      font-family: 'Playfair Display', Georgia, serif;
+      font-style: italic;
+      font-size: clamp(1.02rem, 3.8vw, 1.14rem);
+      line-height: 1.68;
+      color: #ffd6df;
+    }
+
+    .secret-final-declaration {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-style: italic;
+      font-size: clamp(1.12rem, 4vw, 1.28rem);
+      font-weight: 600;
+      color: #ffb3c1;
+      text-align: center;
+      margin: 22px 0 18px 0;
+    }
+
+    .secret-footer-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 22px;
+      padding-top: 18px;
+      border-top: 1px dashed rgba(255, 255, 255, 0.16);
     }
 
     /* ================= BARRA DE NAVEGACIÓN SUPERIOR ================= */
@@ -1627,6 +1767,10 @@
         height: 42px;
         background: rgba(15, 15, 15, 0.85);
       }
+
+      .secret-letter-card {
+        padding: 28px 20px 24px 20px;
+      }
     }
   </style>
 </head>
@@ -1706,6 +1850,70 @@
     <input type="password" maxlength="6" inputmode="numeric" id="pinInput" class="pin-input" placeholder="••••••" onkeyup="checkPin()">
     <p id="pinError" style="color: var(--netflix-red); font-size: 0.85rem; min-height: 20px;"></p>
     <button class="btn btn-info" style="margin-top: 12px;" onclick="closePinPrompt()">Regresar a los perfiles</button>
+  </div>
+
+  <!-- ================= CARTA SECRETA ROMÁNTICA (DESBLOQUEADA CON PIN) ================= -->
+  <div class="secret-letter-overlay" id="secretLetterOverlay">
+    <div class="secret-letter-card">
+      <div class="secret-seal-wrap">
+        <div class="secret-wax-seal">♥</div>
+        <span class="secret-eyebrow">Archivo Confidencial • Solo para ti</span>
+      </div>
+
+      <h2 class="secret-salutation">Mi niña hermosa:</h2>
+
+      <div class="secret-body">
+        <p>
+          Quiero que sepas algo que quizá te digo muchas veces, pero que nunca me voy a cansar de recordarte: me haces sentir algo tan bonito que incluso los días en los que no puedo tenerte cerquita de mí siguen teniendo un pedacito de ti.
+        </p>
+
+        <p>
+          Cada día encuentro una nueva razón para seguir enamorándome de ti. Y es curioso, porque aunque ahora no pueda verte, abrazarte o tenerte a mi lado como tanto quisiera, sigues estando presente en cada uno de mis días. Estás en mis pensamientos cuando despierto, en las pequeñas cosas que me suceden y que quisiera contarte, en cada momento en el que me descubro pensando en ti sin siquiera darme cuenta. Estás presente incluso en esos ratitos en los que no estamos hablando, porque de alguna manera siempre encuentro la forma de sentirte cerquita de mí.
+        </p>
+
+        <p>
+          Y si alguna vez me preguntara cómo sé que sigo tan enamorado de ti a pesar de la distancia, creo que la respuesta está precisamente en eso: en que no necesito tenerte frente a mí para seguir sintiendo todo este amor. Porque te extraño cuando comienza el día, te pienso mientras transcurren mis horas y te espero con unas ganas inmensas de volver a tenerte entre mis brazos. No hay distancia que me haga querer menos de ti, ni un solo día en el que deje de desear compartir mi vida contigo.
+        </p>
+
+        <p>
+          Mi niña, te espero con las mismas ilusiones, con las mismas ganas de consentirte, de hacerte sentir amada, de escucharte hablar de tus cosas y de compartir hasta los momentos más sencillitos contigo. No quiero que por estar lejos dudes ni un poquito de lo mucho que significas para mí. Mi amor por ti no se queda esperando a que regreses para demostrarse; sigue aquí, en cada pensamiento, en cada palabra y en cada una de las ganas que tengo de hacerte feliz.
+        </p>
+
+        <p>
+          Te amo con toda mi alma, corazón. Y no te lo digo por exagerar, por sonar intenso o simplemente por decirte algo bonito. En verdad, lo que siento por ti no es cualquier cosa. Eres una personita que llegó a mi vida y que ha conseguido hacerme sentir un amor que quiero cuidar, construir y demostrarte todos los días. No sabes lo bonito que es saber que eres tú la persona a la que quiero contarle mis días, con quien quiero crear recuerdos y a quien quiero seguir eligiendo incluso cuando las circunstancias no nos permitan estar juntitos.
+        </p>
+
+        <p>
+          Quiero que cuando leas esto recuerdes que aquí tienes a alguien que te extraña muchísimo, que piensa en ti más de lo que imaginas y que cuenta los días para volver a verte. Alguien que sigue tan enamorado de su niña hermosa como el primer día, que te espera con el corazón lleno de amor y con unas ganas inmensas de recuperar todos esos abrazos que tenemos pendientes.
+        </p>
+
+        <div class="secret-highlight-quote">
+          Te amo, mi niña hermosa. Te amo en la distancia, en los días buenos, en los días difíciles, en los momentos en los que podemos hablar y también en aquellos en los que simplemente te llevo conmigo en mis pensamientos.
+        </div>
+
+        <p>
+          Y si algo tengo muy claro es que, cuando vuelva a tenerte cerquita, voy a abrazarte con todas esas ganas que he guardado durante este tiempo y voy a recordarte, una vez más, lo inmensamente feliz que me hace tenerte en mi vida.
+        </p>
+
+        <div class="secret-final-declaration">
+          Te amoooo con toda mi alma, mi niña. Siempre tú, corazón. ❤️
+        </div>
+      </div>
+
+      <div class="letter-signature">
+        <span>Con todo mi amor,</span>
+        <strong>tu noviecito uwu ♡</strong>
+      </div>
+
+      <div class="secret-footer-actions">
+        <button class="btn btn-play" onclick="enterSiteFromSecretLetter()">
+          Ir al inicio de nuestra serie
+        </button>
+        <button class="btn btn-info" onclick="closeSecretLetterToProfiles()">
+          Volver a los perfiles
+        </button>
+      </div>
+    </div>
   </div>
 
   <!-- ================= BARRA SUPERIOR ================= -->
@@ -2643,14 +2851,24 @@
       if (val.length === 6) {
         if (val === PIN_SECRETO) {
           closePinPrompt();
-          document.getElementById('profilesScreen').classList.add('hidden');
-          openModal();
-          launchSparkles(18);
+          playSoftChime(523.25);
+          document.getElementById('secretLetterOverlay').classList.add('open');
+          launchSparkles(22);
         } else {
           document.getElementById('pinError').textContent = 'Código incorrecto. Intenta nuevamente.';
           document.getElementById('pinInput').value = '';
         }
       }
+    }
+
+    function enterSiteFromSecretLetter() {
+      document.getElementById('secretLetterOverlay').classList.remove('open');
+      selectGirlProfile('mi.netflix/g1.jpg');
+    }
+
+    function closeSecretLetterToProfiles() {
+      document.getElementById('secretLetterOverlay').classList.remove('open');
+      document.getElementById('profilesScreen').classList.remove('hidden');
     }
 
     function toggleMyList() {
